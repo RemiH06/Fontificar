@@ -30,6 +30,7 @@ fontificar/nucleo.py     `fontificar()`, cmap, nombres y métricas
 fontificar/muestra.py    página HTML de muestra
 fontificar/cli.py        CLI: lotes, zips leídos en memoria, rutas por omisión
 pyproject.toml           instalación editable y el comando `fontificar`
+logo.svg                 logo: ñ en matriz de puntos dibujada a mano (sin fuente de terceros)
 tests/                   pruebas (`python -I -m unittest discover -s tests`); `sintetica.py` arma fuentes de prueba
 steps.md                 plan y traspaso entre sesiones
 ```

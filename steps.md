@@ -4,11 +4,12 @@
 
 Iteración 6 (`fontificata`) cerrada el 2026-10-20: 87 pruebas en verde, ya es el idioma por omisión del CLI. Skill de Fontificar actualizada (en `48.SkillShot` y sincronizada a `~/.claude/skills/`, más su línea en el README del hub). `fonts/in/` reordenada: suelta solo `!y2kbug.ttf` (y su `read_me.txt`), cada fuente de prueba extra con su zip en su subcarpeta (`ComicRunes/`, `FortunaDot/`, `Liverpool/` solo el zip, `Samarkan/`) y `Y2KBUG.zip` en `zips/`.
 
+Logo hecho el 2026-10-20 (`logo.svg`): ñ minúscula en matriz de puntos de 5×7, dibujada con círculos y sin fuente de terceros (es obra propia, no arrastra licencias). La `n` va en tinta (`#1F2430`, `#F2F2F2` en modo oscuro por `prefers-color-scheme`) y la tilde en acento `#D9480F` (4.3:1 sobre blanco y 4.4:1 sobre `#0D1117`, sirve en los dos temas): la tilde es lo que Fontificar agrega. A 16 px se empasta; para favicon haría falta una versión simplificada.
+
 Siguiente, en este orden:
 
-1. Logo de Fontificar.
-2. Documentación simple (qué hace, cómo se usa, ejemplo original contra nueva), con piezas de los temas `apolo` o `bookworm` de `37.iroFactory`.
-3. README raíz con la skill `readme-generator`.
+1. Documentación simple (qué hace, cómo se usa, ejemplo original contra nueva), con piezas de los temas `apolo` o `bookworm` de `37.iroFactory`. Usar `logo.svg`.
+2. README raíz con la skill `readme-generator`.
 
 Mejoras visuales posibles (no bloquean): la tilde hecha con la `s` acostada sale chica y el caron de Samarkan, grande (viene de sus agudo y grave, que son altos). Þ de Samarkan sale rara (su `P` es una `p` con descendente). ¢ de Y2KBUG lleva una diagonal muy pesada (la `/` de la fuente es ancha).
 
