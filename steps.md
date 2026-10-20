@@ -2,11 +2,25 @@
 
 ## Siguiente sesión
 
-Iteración 1 casi cerrada: `fontificar.py`, `tests/` (11 pruebas en verde) y la muestra existen. Falta:
+Iteración 1 cerrada el 2026-10-20.
 
-1. Revisión visual en un editor real (instalar `fonts/out/!y2kbug-es.ttf` y escribir la frase de prueba). `fonts/muestra.html` ya se revisó el 2026-10-20 con Edge sin interfaz: sin cuadros vacíos, acentos parejos en mayúsculas y minúsculas, ¡ ¿ correctos. Si en el editor algún acento se ve pegado o muy lejos, ajustar `HUECO` en `fontificar.py`.
-2. Con eso, marcar el criterio "sin cuadros vacíos en un editor real" y cerrar la iteración 1.
-3. Iteración 2 (Latin-1): sumar `grave`, `circumflex`, `ring`, `cedilla` y las letras de la tabla. El mecanismo ya es general (`MARCAS`, descomposición NFD). Pendiente de decidir: `å`, `ø`, `æ`, `œ`, `ß` no se derivan por composición.
+Iteración 2 (Latin-1) implementada el 2026-10-20: `--idioma latin1` agrega 67 glifos, 25 pruebas en verde, `fonts/muestra.html` revisada con Edge sin interfaz (ningún caracter cae a otra fuente). Falta:
+
+1. Revisión visual en un editor real con `fonts/out/!y2kbug-latin1.ttf` instalada (sobre todo `ç`, `å`, `ø`, `æ`, `œ`, `î`, `ï`). Si algo se ve mal, las perillas son `ESCALA_*` y `HUECO` en `fontificar.py`.
+2. Reinstalar `fonts/out/!y2kbug-es.ttf`: cambió el avance de `í` (210 a 271, ver decisiones).
+3. Con eso, cerrar la iteración 2. La 3 (Latin Extended-A) necesita decidir de dónde sale el caron (ˇ): candidato, `asciicircum` reducido y volteado.
+
+Decisiones tomadas en la iteración 2:
+
+- Idioma nuevo `latin1`: letras de Latin-1 más Œ œ Ÿ (Windows-1252) y los acentos sueltos ´ ¨ ¸; sufijo de familia `Latino` (`!Y2KBUG Latino`). Fuera: ß Ð ð Þ þ (no se derivan de nada que traiga la fuente) y los símbolos de Latin-1 que no son letras (« » ª º £ etc.).
+- Los acentos sueltos se agregan solo si el idioma los usa: la salida `es` no cambia de lista.
+- `˚`: `period` a 0.6 (en Y2KBUG `period` ya es un anillo; la `o` reducida a tamaño de acento dejaba un trazo de ~14 unidades). Cambia lo decidido al cierre de la iteración 1.
+- `ˆ` (U+02C6): `asciicircum` a 0.6 de ancho y 0.45 de alto; completo mide 310 y subiría el ascendente a ~1080.
+- `¸`: `comma` volteada en vertical a 0.6, pegada debajo de la base.
+- `ø`: `o` + `slash` superpuestos, sin recortar: los extremos verticales de `slash` caen sobre las astas de la `o`.
+- `æ œ`: la segunda letra se recorre hasta compartir el asta (ancho de la `i`). La fuente es proporcional, no monoespaciada.
+- Si el acento más `HUECO` no cabe en el avance de la base, el avance crece y la base se centra: `í` 271, `ï` 352. Antes el acento invadía la letra vecina.
+- `_ajustar_metricas` también baja el descendente si hace falta (la cedilla llega a -187, cabe en -200).
 
 Decisiones tomadas en la iteración 1:
 
@@ -39,7 +53,7 @@ Decisiones tomadas en la iteración 1:
 
 **Listo cuando:**
 - [x] Cada codepoint de la lista objetivo está en `cmap` y apunta a un glifo con contorno.
-- [ ] "Canción, pingüino, ¿Qué tal? ¡Hola! ÁÉÍÓÚÜÑ" se ve sin cuadros vacíos en un editor real.
+- [x] "Canción, pingüino, ¿Qué tal? ¡Hola! ÁÉÍÓÚÜÑ" se ve sin cuadros vacíos en un editor real.
 - [x] Los acentos no se separan de su letra ni chocan con la línea de arriba, en minúsculas y mayúsculas (revisión visual en tamaño grande).
 - [x] Los glifos que ya existían no cambian (mismos contornos y anchos antes y después).
 - [x] La familia de salida conserva el nombre original y le agrega un sufijo (`!Y2KBUG Español`), como pide la licencia de Larabie, y sale con una copia de esa licencia.
@@ -50,7 +64,7 @@ Decisiones tomadas en la iteración 1:
 | # | Meta | Incluye | Criterio de cierre |
 |---|---|---|---|
 | 1 | Español sobre una fuente | á é í ó ú ü ñ y sus mayúsculas, ¡ ¿ | Los criterios de arriba pasan con la fuente real |
-| 2 | Latin-1 completo | ç â ê î ô û à è ì ò ù ä ë ï ö å ø ß æ œ, entre otros | Mismo chequeo sobre la lista ampliada |
+| 2 | Latin-1 (letras) | ç â ê î ô û à è ì ò ù ä ë ï ö å ø æ œ, entre otros; sin ß Ð ð Þ þ | Mismo chequeo sobre la lista ampliada |
 | 3 | Latin Extended-A | Polaco, checo, turco, etc.; anclas GPOS de marca si el posicionamiento fijo no alcanza | Mismo chequeo; acentos apilados legibles |
 
 ### Dudas abiertas
