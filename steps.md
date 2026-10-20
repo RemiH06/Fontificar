@@ -8,8 +8,30 @@ Iteración 4 (paquete, fuentes cualesquiera y CFF) implementada el 2026-10-20: `
 
 Siguiente, en este orden:
 
-1. Hacerlo lo más fácil de usar posible (necesita su planeación: ¿varios idiomas o carpetas de una vez?, ¿nombre de salida por omisión?, ¿instalar con `pip install -e`?).
-2. Al final, la skill de Fontificar.
+1. Iteración 6, idioma `fontificata` (alcance confirmado el 2026-10-20, ver abajo). Al cerrarla, pasa a ser el idioma por omisión del CLI.
+2. Iteración 5 cerrada el 2026-10-20 (70 pruebas en verde; probada con `Y2KBUG.zip` y con el comando instalado en un venv aparte).
+3. Al final, la skill de Fontificar.
+
+Iteración 5, fácil de usar (implementada):
+
+- `pyproject.toml` mínimo con `[project.scripts] fontificar = "fontificar.cli:principal"`; se instala con `pip install -e .`. `python -I fontificar` sigue funcionando.
+- Flujo: se deja un `.zip`, `.ttf` u `.otf` en `fonts/in/` y se corre `fontificar`. Sin argumentos procesa todo el nivel superior de `fonts/in/` (las subcarpetas de prueba no, así Liverpool nunca entra por accidente). Con argumentos, cada uno se busca tal cual y, si no existe, dentro de `fonts/in/`. Las rutas son relativas a la raíz del proyecto (el paquete la conoce), no a la carpeta actual.
+- Salida en `fonts/out/` como `<nombre>-<idioma>.<ext>`; `-o` la cambia. Licencia junto a la salida, como hoy.
+- Zip: se leen en memoria solo los `.ttf`/`.otf` y la licencia; nada se extrae a disco. Un zip con varias fuentes (regular, bold…) genera una salida por cada una.
+- En lote, una fuente que falla se reporta y se sigue con la siguiente; al final, resumen (generadas, fallidas, glifos omitidos).
+- Una muestra por salida (`<salida>-muestra.html`), ya no se pisan; `--abrir` la abre en el navegador (`webbrowser`).
+- `--revisar`: dice qué falta y qué se puede derivar, sin escribir nada.
+- Idioma por omisión: `latinext` mientras no exista `fontificata`; después, `fontificata`.
+- Fuera: interfaz gráfica, `.bat` de arrastrar y soltar, varios idiomas en una corrida.
+- Detalles de la implementación: `fontificar()` acepta bytes y `salida=None` (no escribe, para `--revisar`); la muestra incrusta la original como `data:` cuando viene de un zip; el zip ignora `__MACOSX/` y `._*` y rechaza archivos de más de 64 MB; dos entradas con la misma salida dan error en vez de encimarse; el CLI devuelve 1 si alguna fuente falló; la consola cp1252 reemplaza lo que no sabe mostrar (antes `˚` tronaba y se reportaba como fuente dañada). Se instala solo editable: el comando busca `fonts/` junto al paquete.
+
+Iteración 6, `fontificata` (alcance confirmado, sin más símbolos por ahora): el idioma más completo posible en uno solo. `latinext` no lo es: deja fuera los símbolos de Latin-1 y Windows-1252. `fontificata` = `latinext` más lo que se pueda derivar de esos símbolos, y lo que no, se omite con su motivo como siempre:
+
+- Comillas y raya: ‘ ’ ‚ “ ” „ (del apóstrofo y la coma), U+2013 y U+2014, las rayas (guion estirado; en el código van por su codepoint, no como caracter, por la regla del guion largo), … (tres puntos), • (punto), ‹ › « » (de `<` `>` reducidos).
+- Ordinales y superíndices: ª º (a y o reducidas con raya), ¹ ² ³ ¼ ½ ¾ (dígitos reducidos, sin tocar los originales).
+- Monedas y signos: € £ ¢ ¥ (letra más barras), © ® (letra dentro de la `o` o de un círculo), ° ± × ÷ ¬ ¦ § ¶ ¤ µ.
+- Letras pendientes: Ð (es la forma de Đ), ð Þ þ Ŋ ŋ, intentarlas y omitirlas si no salen.
+- Fuera: Latin Extended-B y vietnamita (acentos apilados, piden GPOS o compuestos dobles).
 
 Mejoras visuales posibles (no bloquean): la tilde hecha con la `s` acostada sale chica y el caron de Samarkan, grande (viene de sus agudo y grave, que son altos).
 

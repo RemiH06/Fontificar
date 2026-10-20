@@ -1,6 +1,7 @@
 __pycache__/
 *.py[cod]
 .venv/
+*.egg-info/
 venv/
 
 # fuentes de terceros y su salida

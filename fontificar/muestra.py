@@ -1,4 +1,5 @@
 """Página HTML estática para comparar la fuente original con la nueva."""
+import base64
 import html
 import os
 from pathlib import Path
@@ -8,10 +9,15 @@ from .idiomas import IDIOMAS
 
 
 def escribir_muestra(original, nueva, ruta, idioma="es"):
-    """Página HTML estática que pone el mismo texto con la fuente original y la nueva."""
+    """Página HTML estática que pone el mismo texto con la fuente original y la nueva.
+    Cada fuente es una ruta (se enlaza relativa a la página) o sus bytes (se incrustan,
+    como la original que viene de un zip y no está en disco)."""
     base = Path(ruta).parent
 
     def url(fuente):
+        if isinstance(fuente, (bytes, bytearray)):
+            tipo = "font/otf" if fuente[:4] == b"OTTO" else "font/ttf"
+            return f"data:{tipo};base64,{base64.b64encode(fuente).decode('ascii')}"
         try:
             return quote(Path(os.path.relpath(fuente, base)).as_posix())
         except ValueError:  # en Windows, otra unidad no tiene ruta relativa

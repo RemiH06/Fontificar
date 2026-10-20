@@ -2,7 +2,7 @@
 
 Amplía la cobertura de una fuente TTF/OTF (ñ, acentos, ¡ ¿ y después otros símbolos y alfabetos latinos) generando una copia con glifos nuevos. v1: solo español. Fuente de prueba: Y2KBUG de Ray Larabie.
 
-Forma de uso decidida: librería (paquete `fontificar/`) con un CLI delgado (`argparse`) y una página HTML estática de muestra (original contra nueva). Sin UI en la v1. CLI: `python -I fontificar entrada.ttf salida.ttf --idioma es|latin1|latinext` desde la raíz (con `-I`, `-m fontificar` no encuentra el paquete).
+Forma de uso decidida: librería (paquete `fontificar/`) con un CLI delgado (`argparse`) y una página HTML estática de muestra (original contra nueva). Sin UI en la v1. CLI: `fontificar` (instalado con `pip install -e .`) o `python -I fontificar` desde la raíz (con `-I`, `-m fontificar` no encuentra el paquete). Sin argumentos procesa lo suelto en `fonts/in/` (.zip, .ttf, .otf) y escribe en `fonts/out/`; `--idioma` (por omisión `latinext`), `-o`, `--revisar`, `--abrir`.
 
 Principio: trabajar con lo que traiga cada fuente. TrueType y OpenType CFF. Cada acento tiene una cadena de respaldos (`MARCAS` en `acentos.py`); lo que no se puede derivar se omite con su motivo, nunca se detiene todo. Las reglas que dependen de la forma de una letra se miden en la fuente, no se suponen a partir de Y2KBUG.
 
@@ -20,14 +20,15 @@ Principio: trabajar con lo que traiga cada fuente. TrueType y OpenType CFF. Cada
 
 ```
 fonts/in/                fuentes de entrada (no se versionan); las de prueba extra en subcarpetas
-fonts/out/               fuentes generadas y muestra.html (no se versionan)
+fonts/out/               fuentes generadas, su licencia y su muestra (no se versionan)
 fontificar/idiomas.py    qué caracteres agrega cada idioma
 fontificar/glifos.py     `Obra` (la fuente en construcción, escribe en glyf o CFF) y utilidades de contorno
 fontificar/acentos.py    acentos derivados con sus respaldos (`MARCAS`) y letra más acento
 fontificar/especiales.py Ø Æ ß Đ Ł Ĳ ı ĸ y giros (`ESPECIALES`, `GIROS`)
 fontificar/nucleo.py     `fontificar()`, cmap, nombres y métricas
 fontificar/muestra.py    página HTML de muestra
-fontificar/cli.py        CLI
+fontificar/cli.py        CLI: lotes, zips leídos en memoria, rutas por omisión
+pyproject.toml           instalación editable y el comando `fontificar`
 tests/                   pruebas (`python -I -m unittest discover -s tests`); `sintetica.py` arma fuentes de prueba
 steps.md                 plan y traspaso entre sesiones
 ```

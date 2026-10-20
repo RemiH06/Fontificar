@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fontificar"
+version = "0.5.0"
+description = "Amplía la cobertura de una fuente TTF u OTF con glifos derivados de los que ya trae."
+requires-python = ">=3.10"
+dependencies = ["fonttools"]
+
+# Se instala con `pip install -e .`: el comando busca fonts/in y fonts/out junto al paquete.
+[project.scripts]
+fontificar = "fontificar.cli:principal"
+
+[tool.setuptools]
+packages = ["fontificar"]

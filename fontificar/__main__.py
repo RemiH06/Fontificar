@@ -9,4 +9,4 @@ if not __package__:
 
 from fontificar.cli import principal  # noqa: E402
 
-principal()
+sys.exit(principal())

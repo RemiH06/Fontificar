@@ -1,5 +1,6 @@
 """`fontificar()`: recorre los caracteres del idioma, agrega los que se puedan derivar
 de lo que trae la fuente, omite (con su motivo) los que no y ajusta las tablas."""
+import io
 import unicodedata
 from pathlib import Path
 from typing import NamedTuple
@@ -115,6 +116,9 @@ def fontificar(entrada, salida, idioma="es"):
     mapeado a un glifo vacío cuenta como faltante: se mapea al glifo nuevo y el vacío
     se queda en la fuente sin tocar.
 
+    `entrada` es una ruta o los bytes de la fuente (por ejemplo, leída de un zip). Con
+    `salida=None` no se escribe nada: solo se averigua qué se agregaría y qué no.
+
     Devuelve un `Resultado` con lo agregado y lo omitido. Falla si no se agregó nada:
     porque la fuente ya cubre el idioma (así no se renombra dos veces) o porque nada
     se pudo derivar.
@@ -122,11 +126,15 @@ def fontificar(entrada, salida, idioma="es"):
     if idioma not in IDIOMAS:
         raise ValueError(f"idioma desconocido '{idioma}' (disponibles: {', '.join(IDIOMAS)})")
     clave, idioma = idioma, IDIOMAS[idioma]
-    entrada, salida = Path(entrada), Path(salida)
-    if entrada.resolve() == salida.resolve():
-        raise ValueError("la salida no puede ser el mismo archivo que la entrada")
+    if isinstance(entrada, (bytes, bytearray)):
+        fuente = TTFont(io.BytesIO(entrada))
+    else:
+        entrada = Path(entrada)
+        if salida is not None and entrada.resolve() == Path(salida).resolve():
+            raise ValueError("la salida no puede ser el mismo archivo que la entrada")
+        fuente = TTFont(entrada)
 
-    obra = Obra(TTFont(entrada))
+    obra = Obra(fuente)
     omitidos = {}
     sueltos = {suelto: combinante for combinante, (suelto, _, _) in MARCAS.items()}
     for caracter in idioma.caracteres:
@@ -146,6 +154,9 @@ def fontificar(entrada, salida, idioma="es"):
             raise ValueError(f"no pude derivar ningún caracter del idioma '{clave}': "
                              + "; ".join(f"{chr(c)}: {m}" for c, m in omitidos.items()))
         raise ValueError(f"la fuente ya cubre el idioma '{clave}', no hay nada que agregar")
+    if salida is None:
+        return Resultado(obra.nuevos, omitidos)
+    salida = Path(salida)
     fuente = obra.fuente
     _registrar_cmap(fuente, obra.nuevos)
     _ajustar_metricas(obra)

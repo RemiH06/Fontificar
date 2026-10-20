@@ -5,7 +5,9 @@ import io
 import sys
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
+from unittest import mock
 
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ))  # con `python -I` el directorio actual no entra solo
@@ -14,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from fontTools.ttLib import TTFont  # noqa: E402
 
 import fontificar  # noqa: E402
+from fontificar import cli  # noqa: E402
 from fontificar.cli import principal  # noqa: E402
 from fontificar.glifos import caja_de, contornos  # noqa: E402
 from sintetica import caja, construir  # noqa: E402
@@ -174,11 +177,128 @@ class Cli(unittest.TestCase):
             (entrada_dir / "FreeLicense.txt").write_text("licencia de prueba", encoding="utf-8")
             texto = io.StringIO()
             with contextlib.redirect_stdout(texto):
-                principal([str(entrada_dir / "prueba.ttf"), str(salida_dir / "prueba-es.ttf")])
+                codigo = principal([str(entrada_dir / "prueba.ttf"), "-o", str(salida_dir / "prueba-es.ttf"),
+                                    "--idioma", "es"])
+            self.assertEqual(codigo, 0)
             self.assertEqual((salida_dir / "prueba-es-licencia.txt").read_text(encoding="utf-8"), "licencia de prueba")
-            self.assertTrue((salida_dir / "muestra.html").is_file())
+            self.assertTrue((salida_dir / "prueba-es-muestra.html").is_file())
             self.assertIn("2 omitidos", texto.getvalue())
             self.assertIn("U+00F1", texto.getvalue())
+
+
+class Lote(unittest.TestCase):
+    """El flujo de dejar fuentes o zips en fonts/in y correr `fontificar` sin argumentos."""
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.entradas, self.salidas = Path(tmp.name) / "in", Path(tmp.name) / "out"
+        self.entradas.mkdir()
+        for nombre, valor in (("ENTRADAS", self.entradas), ("SALIDAS", self.salidas)):
+            parche = mock.patch.object(cli, nombre, valor)
+            parche.start()
+            self.addCleanup(parche.stop)
+
+    def correr(self, *argumentos):
+        salida, errores = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(salida), contextlib.redirect_stderr(errores):
+            codigo = principal(list(argumentos))
+        return codigo, salida.getvalue(), errores.getvalue()
+
+    def zip_con(self, nombre, miembros):
+        ruta = self.entradas / nombre
+        with zipfile.ZipFile(ruta, "w") as archivo:
+            for miembro, datos in miembros.items():
+                archivo.writestr(miembro, datos)
+        return ruta
+
+    def bytes_de_fuente(self, nombre="prueba.ttf", cff=False):
+        ruta = self.entradas.parent / nombre
+        construir(ruta, cff=cff)
+        return ruta.read_bytes()
+
+    def test_zip_sin_argumentos_sale_en_out_con_licencia_y_muestra_incrustada(self):
+        self.zip_con("Prueba.zip", {"Prueba/prueba.ttf": self.bytes_de_fuente(),
+                                    "Prueba/read_me.txt": b"licencia del zip",
+                                    "__MACOSX/Prueba/._prueba.ttf": b"basura de mac"})
+        codigo, salida, errores = self.correr()
+        self.assertEqual(codigo, 0, errores)
+        nueva = self.salidas / "prueba-latinext.ttf"
+        self.assertIn(ord("ñ"), TTFont(nueva).getBestCmap())
+        self.assertEqual((self.salidas / "prueba-latinext-licencia.txt").read_bytes(), b"licencia del zip")
+        muestra = (self.salidas / "prueba-latinext-muestra.html").read_text(encoding="utf-8")
+        self.assertIn("data:font/ttf;base64,", muestra)  # la original no está en disco
+        self.assertNotIn("aviso", errores)
+        self.assertNotIn("_prueba", salida)
+
+    def test_zip_con_varias_fuentes_da_una_salida_por_cada_una(self):
+        self.zip_con("Familia.zip", {"regular.ttf": self.bytes_de_fuente("r.ttf"),
+                                     "negrita.otf": self.bytes_de_fuente("n.otf", cff=True)})
+        codigo, salida, _ = self.correr("Familia.zip", "--idioma", "es")  # se busca en fonts/in
+        self.assertEqual(codigo, 0)
+        self.assertTrue((self.salidas / "regular-es.ttf").is_file())
+        self.assertTrue((self.salidas / "negrita-es.otf").is_file())
+        self.assertIn("resumen: 2 generadas, 0 con error", salida)
+
+    def test_una_fuente_danada_no_detiene_el_lote_y_las_subcarpetas_no_entran(self):
+        construir(self.entradas / "buena.ttf")
+        (self.entradas / "rota.ttf").write_bytes(b"esto no es una fuente")
+        (self.entradas / "rota.zip").write_bytes(b"ni esto un zip")
+        (self.entradas / "notas.txt").write_text("se ignora", encoding="utf-8")
+        (self.entradas / "pruebas").mkdir()
+        construir(self.entradas / "pruebas" / "ajena.ttf")
+        codigo, salida, errores = self.correr("--idioma", "es")
+        self.assertEqual(codigo, 1)
+        self.assertTrue((self.salidas / "buena-es.ttf").is_file())
+        self.assertFalse((self.salidas / "ajena-es.ttf").exists())
+        self.assertIn("rota.ttf", errores)
+        self.assertIn("rota.zip", errores)
+        self.assertIn("resumen: 1 generadas, 2 con error", salida)
+
+    def test_revisar_no_escribe_nada(self):
+        construir(self.entradas / "prueba.ttf", {"~": None, "s": None, "S": None})
+        codigo, salida, _ = self.correr("--revisar", "--idioma", "es")
+        self.assertEqual(codigo, 0)
+        self.assertFalse(self.salidas.exists())
+        self.assertIn("se pueden agregar", salida)
+        self.assertIn("U+00F1", salida)  # la ñ se omite: no hay tilde ni de dónde sacarla
+
+    def test_una_consola_cp1252_no_confunde_caracteres_con_errores(self):
+        construir(self.entradas / "prueba.ttf")
+        crudo = io.BytesIO()
+        consola = io.TextIOWrapper(crudo, encoding="cp1252")
+        with contextlib.redirect_stdout(consola), contextlib.redirect_stderr(io.StringIO()):
+            codigo = principal(["--revisar"])  # latinext lista ł ˝ ˚, fuera de cp1252
+        consola.flush()
+        self.assertEqual(codigo, 0)
+        self.assertIn(b"se pueden agregar", crudo.getvalue())
+
+    def test_salida_explicita_pide_una_sola_fuente(self):
+        construir(self.entradas / "a.ttf")
+        construir(self.entradas / "b.ttf")
+        with self.assertRaises(SystemExit), contextlib.redirect_stderr(io.StringIO()):
+            principal(["-o", str(self.salidas / "x.ttf")])
+
+    def test_dos_entradas_con_la_misma_salida_no_se_enciman(self):
+        construir(self.entradas / "prueba.ttf")
+        self.zip_con("prueba.zip", {"prueba.ttf": self.bytes_de_fuente()})
+        codigo, _, errores = self.correr("--idioma", "es")
+        self.assertEqual(codigo, 1)
+        self.assertIn("se encimaría", errores)
+
+    def test_carpeta_vacia_y_archivo_inexistente_dan_error_claro(self):
+        with self.assertRaises(SystemExit), contextlib.redirect_stderr(io.StringIO()):
+            principal([])
+        codigo, _, errores = self.correr("no-existe.ttf")
+        self.assertEqual(codigo, 1)
+        self.assertIn("no existe", errores)
+
+    def test_zip_con_un_archivo_enorme_se_rechaza_sin_leerlo(self):
+        self.zip_con("grande.zip", {"grande.ttf": b"0" * 2048})
+        with mock.patch.object(cli, "MAXIMO_EN_ZIP", 1024):
+            codigo, _, errores = self.correr()
+        self.assertEqual(codigo, 1)
+        self.assertIn("pesa más de", errores)
 
 
 if __name__ == "__main__":
