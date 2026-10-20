@@ -10,7 +10,12 @@ Siguiente, en este orden:
 
 1. Iteración 6, idioma `fontificata` (alcance confirmado el 2026-10-20, ver abajo). Al cerrarla, pasa a ser el idioma por omisión del CLI.
 2. Iteración 5 cerrada el 2026-10-20 (70 pruebas en verde; probada con `Y2KBUG.zip` y con el comando instalado en un venv aparte).
-3. Al final, la skill de Fontificar.
+3. Skill de Fontificar hecha el 2026-10-20 en `48.SkillShot/Skills/fontificar/` (integrada en `skill-selector` y el README del hub, sincronizada a `~/.claude/skills/`). Al cerrar la iteración 6, actualizarla: idioma `fontificata` y su nuevo valor por omisión.
+4. Logo de Fontificar.
+5. Documentación simple (qué hace, cómo se usa, ejemplo original contra nueva), con piezas de los temas `apolo` o `bookworm` de `37.iroFactory`.
+6. README raíz con la skill `readme-generator`.
+
+Riesgo pendiente: los zips de prueba (`Liverpool.zip`, `Comic-Runes.zip`, `Fortuna-Dot.zip`, `Samarkan-Normal.zip`) están sueltos en `fonts/in/`, así que `fontificar` sin argumentos los procesa (Liverpool prohíbe modificarla). Moverlos a su subcarpeta.
 
 Iteración 5, fácil de usar (implementada):
 
