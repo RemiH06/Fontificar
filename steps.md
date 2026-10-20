@@ -1,3 +1,8 @@
+crear skill de fontificar
+hacerlo lo más fácil de usar posible
+separar el fontificar.py en files py de funciones dedicadas
+probar con más fuentes
+
 # Pendientes
 
 ## Siguiente sesión
@@ -8,10 +13,23 @@ Iteración 2 (Latin-1) cerrada el 2026-10-20: `--idioma latin1` agrega 67 glifos
 
 ß agregada a `latin1` el 2026-10-20 (68 glifos, 27 pruebas en verde, revisada en `fonts/muestra.html` con Edge sin interfaz). Ambas fuentes de `fonts/out` se regeneraron.
 
+Iteración 3 (Latin Extended-A) implementada el 2026-10-20: `--idioma latinext` agrega 197 glifos (`!Y2KBUG Latino Extendido`), 44 pruebas en verde, revisada en Edge sin interfaz con los glifos nuevos en tamaño grande.
+
 Siguiente:
 
-1. Reinstalar `!y2kbug-latin1.ttf` (trae la ß) y `!y2kbug-es.ttf` (el agudo cambió de sentido de contorno, no de forma) y revisar la ß en un editor real.
-2. Iteración 3 (Latin Extended-A): decidir de dónde sale el caron (ˇ), candidato `asciicircum` reducido y volteado. La ẞ (U+1E9E) puede apuntar al glifo de la ß porque la fuente es unicase. La ſ (U+017F) no se hace: no hace falta.
+1. Instalar `fonts/out/!y2kbug-latinext.ttf` y revisarla en un editor real, sobre todo Đ Ħ Ł Ŧ, el ogonek (ą ę į ų), el breve (ğ ă) y el doble agudo (ő ű). Reinstalar también `!y2kbug-latin1.ttf` (trae la ß) y `!y2kbug-es.ttf` (el agudo cambió de sentido de contorno, no de forma). Las perillas son `ESCALA_*`, `HUECO` y la tabla `ESPECIALES` en `fontificar.py`.
+2. Con eso, cerrar la iteración 3 y el plan. Las ideas de hasta arriba (skill, facilidad de uso, partir `fontificar.py`, más fuentes) necesitan su propia planeación.
+
+Decisiones tomadas en la iteración 3:
+
+- Idioma `latinext`: Latin-1 completo más U+0100 a U+017F, más `·` (lo usa Ŀ) y ẞ. Fuera: ŉ (Unicode lo da por obsoleto), Ŋ ŋ (la fuente no tiene descendentes ni de dónde sacar el gancho) y ſ (no hace falta).
+- Acentos nuevos, todos apoyados a la altura de la base de `grave`: caron ˇ (`asciicircum` a 0.6 de ancho y -0.45 de alto, volteado), macron ¯ (`hyphen` angostado a 0.6, mismo grosor), breve ˘ (`(` girado 90° para abrir hacia arriba, 0.29 a lo largo y 0.6 a lo grueso; se descartó la `U` aplastada, sale muy alta), punto ˙ (un punto de la diéresis), doble agudo ˝ (dos agudos a 0.75).
+- Ogonek ˛: el mismo contorno de la cedilla, pero alineado con el borde derecho de la letra (posición `DEBAJO_DERECHA`). Las cedillas de Ģ Ķ Ļ Ņ Ŗ se quedan como cedilla (no coma abajo).
+- Caron siempre arriba, también en ď ľ ť: la fuente es unicase, así que no se usa la forma de apóstrofo.
+- Barras: `hyphen` angostado a tres astas en Đ đ (asta derecha, a 0.8 de alto: en Y2KBUG la `D` es una `d`), Ħ ħ (asta izquierda, a 0.8: la `H` es una `h`) y Ŧ ŧ (centro, a 0.5). Ł ł llevan `slash` reducido parejo sobre el asta izquierda.
+- Copias (glifo compuesto de un solo componente): ı es la `i` (ya no tiene punto), ĸ es la `k` (unicase) y ẞ es la ß. Ĳ ĳ son la `I` y la `J` una tras otra, sin compartir asta. Ŀ ŀ son la `L` más `·`, entre el asta y el borde derecho.
+- `ESPECIALES` recibe el cmap con lo ya agregado; por eso `·` va antes que Ŀ y ß antes que ẞ en la lista del idioma.
+- No hizo falta GPOS: en Latin Extended-A no hay acentos apilados.
 
 Decisiones tomadas al agregar la ß:
 
@@ -74,7 +92,7 @@ Decisiones tomadas en la iteración 1:
 |---|---|---|---|
 | 1 | Español sobre una fuente | á é í ó ú ü ñ y sus mayúsculas, ¡ ¿ | Los criterios de arriba pasan con la fuente real |
 | 2 | Latin-1 (letras) | ç â ê î ô û à è ì ò ù ä ë ï ö å ø æ œ, entre otros, y ß; sin Ð ð Þ þ | Mismo chequeo sobre la lista ampliada |
-| 3 | Latin Extended-A | Polaco, checo, turco, etc.; anclas GPOS de marca si el posicionamiento fijo no alcanza | Mismo chequeo; acentos apilados legibles |
+| 3 | Latin Extended-A | Polaco, checo, turco, etc.; sin ŉ Ŋ ŋ ſ; con ẞ | Mismo chequeo sobre la lista ampliada |
 
 ### Dudas abiertas
 

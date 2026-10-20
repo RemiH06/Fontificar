@@ -62,6 +62,14 @@ class Comunes:
     def avance(self, caracter):
         return self.salida["hmtx"][self.salida.getBestCmap()[ord(caracter)]][0]
 
+    def area(self, conjunto, nombre):
+        lapiz = AreaPen(conjunto)
+        conjunto[nombre].draw(lapiz)
+        return lapiz.value
+
+    def glifo(self, caracter):
+        return self.salida.getBestCmap()[ord(caracter)]
+
     def test_cada_codepoint_tiene_glifo_con_contorno(self):
         cmap = self.salida.getBestCmap()
         for codepoint in self.objetivo:
@@ -95,7 +103,7 @@ class Comunes:
                 techo = max(self.caja(c)[3] for c in de_base)
                 for acento in todos[len(de_base):]:
                     x0, y0, x1, y1 = self.caja(acento)
-                    if fontificar.MARCAS[ord(marcas[0])][2]:
+                    if fontificar.MARCAS[ord(marcas[0])][2] != fontificar.ARRIBA:
                         self.assertLessEqual(y1, piso)
                     else:
                         self.assertGreater(y0, techo)
@@ -219,11 +227,6 @@ class PruebasLatin1(Comunes, unittest.TestCase):
                 self.assertGreater(self.area(conjunto, cmap[ord(nuevo)])
                                    * self.area(conjunto, cmap[ord(origen)]), 0)
 
-    def area(self, conjunto, nombre):
-        lapiz = AreaPen(conjunto)
-        conjunto[nombre].draw(lapiz)
-        return lapiz.value
-
     def test_sobre_fuente_en_espanol_solo_agrega_lo_que_falta(self):
         espanol = Path(self.tmp.name) / "es.ttf"
         ampliada = Path(self.tmp.name) / "es-latin1.ttf"
@@ -231,6 +234,95 @@ class PruebasLatin1(Comunes, unittest.TestCase):
         agregados = fontificar.fontificar(espanol, ampliada, "latin1")
         self.assertFalse(set(agregados) & set(agregados_es))
         self.assertEqual(set(agregados) | set(agregados_es), set(self.nuevos))
+
+
+@unittest.skipUnless(ENTRADA.is_file(), "falta la fuente de prueba en fonts/in")
+class PruebasLatinExt(Comunes, unittest.TestCase):
+    IDIOMA = "latinext"
+
+    def test_agrega_los_acentos_derivados(self):
+        self.assertEqual(set(self.nuevos), set(self.objetivo) | {0x2C6, 0x2DA})
+
+    def test_tabla_mac_usa_codigos_macroman(self):
+        mac = next(t for t in self.salida["cmap"].tables if t.platformID == 1)
+        self.assertEqual(mac.cmap[0xFF], "caron")  # ˇ en MacRoman
+        self.assertEqual(mac.cmap[0xF5], "dotlessi")  # ı en MacRoman
+
+    def test_caron_es_circunflejo_volteado(self):
+        """Los puntos de ˆ reflejados en y (a una unidad, por el redondeo), con el mismo
+        sentido de contorno."""
+        conjunto = self.salida.getGlyphSet()
+        caron, circunflejo = self.contornos(self.salida, self.glifo("ˇ")), self.contornos(self.salida, self.glifo("ˆ"))
+        _, y0, _, y1 = self.caja([t for c in circunflejo for t in c])
+        reflejados = [(x, y0 + y1 - y) for c in circunflejo for _, args in c for x, y in args]
+        puntos = [p for c in caron for _, args in c for p in args]
+        self.assertEqual(len(puntos), len(reflejados))
+        for x, y in puntos:
+            self.assertTrue(any(abs(x - rx) <= 1 and abs(y - ry) <= 1 for rx, ry in reflejados), (x, y))
+        area = self.area(conjunto, self.glifo("ˆ"))
+        self.assertAlmostEqual(self.area(conjunto, self.glifo("ˇ")), area, delta=abs(area) / 100)
+
+    def test_ogonek_va_a_la_derecha_y_la_cedilla_al_centro(self):
+        for con_marca, letra in (("ą", "a"), ("Ę", "E"), ("ų", "u"), ("ş", "s")):
+            with self.subTest(caracter=con_marca):
+                de_letra = self.contornos(self.salida, self.glifo(letra))
+                marca = self.caja([t for c in self.contornos(self.salida, self.glifo(con_marca))[len(de_letra):] for t in c])
+                _, _, lx1, _ = self.caja([t for c in de_letra for t in c])
+                lx0 = self.caja([t for c in de_letra for t in c])[0]
+                if con_marca == "ş":
+                    self.assertAlmostEqual((marca[0] + marca[2]) / 2, (lx0 + lx1) / 2, delta=1)
+                else:
+                    self.assertAlmostEqual(marca[2], lx1, delta=1)
+
+    def test_letras_tachadas_son_la_letra_mas_un_trazo_dentro_del_avance(self):
+        for tachada, letra in (("Đ", "D"), ("đ", "d"), ("Ħ", "H"), ("ħ", "h"),
+                               ("Ł", "L"), ("ł", "l"), ("Ŧ", "T"), ("ŧ", "t")):
+            with self.subTest(caracter=tachada):
+                de_letra = self.contornos(self.salida, self.glifo(letra))
+                todos = self.contornos(self.salida, self.glifo(tachada))
+                self.assertEqual(todos[: len(de_letra)], de_letra)
+                self.assertEqual(len(todos), len(de_letra) + 1)
+                x0, _, x1, _ = self.caja(todos[-1])
+                self.assertGreaterEqual(x0, 0)
+                self.assertLessEqual(x1, self.avance(tachada))
+                self.assertEqual(self.avance(tachada), self.avance(letra))
+
+    def test_copias_son_la_misma_letra(self):
+        for copia, letra in (("ı", "i"), ("ĸ", "k"), ("ẞ", "ß")):
+            with self.subTest(caracter=copia):
+                self.assertEqual(self.contornos(self.salida, self.glifo(copia)),
+                                 self.contornos(self.salida, self.glifo(letra)))
+                self.assertEqual(self.avance(copia), self.avance(letra))
+
+    def test_l_con_punto_medio(self):
+        """Ŀ: la L más `·` a la altura del centro de `hyphen`, a la derecha del asta."""
+        de_l = self.contornos(self.salida, self.glifo("L"))
+        todos = self.contornos(self.salida, self.glifo("Ŀ"))
+        self.assertEqual(todos[: len(de_l)], de_l)
+        x0, y0, x1, y1 = self.caja([t for c in todos[len(de_l):] for t in c])
+        _, gy0, _, gy1 = self.caja([t for c in self.contornos(self.salida, self.glifo("-")) for t in c])
+        self.assertAlmostEqual((y0 + y1) / 2, (gy0 + gy1) / 2, delta=1)
+        asta = self.caja([t for c in self.contornos(self.salida, self.glifo("i")) for t in c])
+        self.assertGreater(x0, self.caja([t for c in de_l for t in c])[0] + asta[2] - asta[0])
+        self.assertLessEqual(x1, self.avance("Ŀ"))
+
+    def test_ij_es_una_letra_tras_otra(self):
+        for ligadura, (i, j) in (("Ĳ", "IJ"), ("ĳ", "ij")):
+            with self.subTest(caracter=ligadura):
+                esperado = (self.contornos(self.salida, self.glifo(i))
+                            + self.mover(self.contornos(self.salida, self.glifo(j)), self.avance(i)))
+                self.assertEqual(self.contornos(self.salida, self.glifo(ligadura)), esperado)
+                self.assertEqual(self.avance(ligadura), self.avance(i) + self.avance(j))
+
+    def test_acentos_nuevos_quedan_a_la_altura_de_grave(self):
+        conjunto = self.salida.getGlyphSet()
+        piso = self.caja([t for c in self.contornos(self.salida, self.glifo("`")) for t in c])[1]
+        # Cada acento con su origen: el sentido del contorno debe ser el mismo.
+        for acento, origen in (("¯", "-"), ("˘", "("), ("˙", "."), ("˝", "`"), ("ˇ", "^")):
+            with self.subTest(caracter=acento):
+                self.assertAlmostEqual(self.caja([t for c in self.contornos(self.salida, self.glifo(acento))
+                                                  for t in c])[1], piso, delta=1)
+                self.assertGreater(self.area(conjunto, self.glifo(acento)) * self.area(conjunto, self.glifo(origen)), 0)
 
 
 if __name__ == "__main__":
