@@ -19,7 +19,7 @@ import fontificar  # noqa: E402
 from fontificar import cli  # noqa: E402
 from fontificar.cli import principal  # noqa: E402
 from fontificar.glifos import caja_de, contornos  # noqa: E402
-from sintetica import caja, construir  # noqa: E402
+from sintetica import PI, caja, construir  # noqa: E402
 
 
 class Adaptable(unittest.TestCase):
@@ -156,6 +156,59 @@ class Adaptable(unittest.TestCase):
                 self.assertGreater(centro, 300) if lado == "derecha" else self.assertLess(centro, 300)
                 self.assertAlmostEqual((y0 + y1) / 2, altura, delta=1)
 
+    def test_fontificata_sin_descendentes_omite_solo_thorn_y_eng(self):
+        """La fuente sintética no trae `+ | < >`: ± × ¦ ‹ › « » salen del guion. Sin
+        descendentes no hay þ ni ŋ Ŋ; lo demás sale, en TrueType y en CFF."""
+        for cff in (False, True):
+            with self.subTest(cff=cff):
+                digitos = {str(d): PI for d in range(10)}  # sin ellos, ¹ ² ³ ¼ ½ ¾ se omiten
+                resultado, original, salida = self.generar("fontificata", cambios=digitos, cff=cff)
+                self.assertEqual(set(resultado.omitidos), {ord("þ"), ord("Ŋ"), ord("ŋ")})
+                self.assertIn("descendente", resultado.omitidos[ord("þ")])
+                for caracter in fontificar.IDIOMAS["fontificata"].caracteres:
+                    if ord(caracter) not in resultado.omitidos:
+                        self.assertTrue(self.contornos(salida, caracter), caracter)
+                for nombre in original.getGlyphOrder():
+                    self.assertEqual(contornos(original.getGlyphSet(), nombre),
+                                     contornos(salida.getGlyphSet(), nombre))
+
+    def test_simbolos_hechos_con_el_guion(self):
+        """El guion sintético va de 50 a 350 (avance 400) con centro en 340."""
+        _, _, salida = self.generar("fontificata")
+        self.assertEqual(self.avance(salida, "\u2013"), 500)
+        self.assertEqual(self.avance(salida, "\u2014"), 1000)
+        x0, _, x1, _ = caja_de([t for c in self.contornos(salida, "\u2014") for t in c])
+        self.assertAlmostEqual(x0, 50, delta=1)
+        self.assertAlmostEqual(x1, 950, delta=1)
+        for signo in "‹›×":
+            with self.subTest(caracter=signo):
+                _, y0, _, y1 = caja_de([t for c in self.contornos(salida, signo) for t in c])
+                self.assertAlmostEqual((y0 + y1) / 2, 340, delta=2)
+        # « es ‹ dos veces, encimados.
+        self.assertEqual(len(self.contornos(salida, "«")), 2 * len(self.contornos(salida, "‹")))
+
+    def test_letras_con_descendente(self):
+        """Con `p` y `j` que bajan y `b` que sube: þ es la `b` encimada con la `p` y ŋ
+        la `n` con el gancho de la `j` (sin su punto) a la derecha."""
+        cambios = {
+            "p": [caja(50, -250, 150, 500), caja(50, 400, 450, 500), caja(350, 200, 450, 500), caja(50, 200, 450, 300)],
+            "b": [caja(50, 0, 150, 800), caja(50, 0, 450, 100), caja(350, 0, 450, 300), caja(50, 200, 450, 300)],
+            "j": [caja(350, -250, 450, 500), caja(50, -250, 450, -150), caja(350, 600, 450, 700)],
+            "J": [caja(350, -250, 450, 700), caja(50, -250, 450, -150)],
+            "n": [caja(50, 0, 150, 500), caja(450, 0, 550, 500), caja(50, 400, 550, 500)],
+        }
+        resultado, _, salida = self.generar("fontificata", cambios=cambios)
+        self.assertNotIn(ord("þ"), resultado.omitidos)
+        _, y0, _, y1 = caja_de([t for c in self.contornos(salida, "þ") for t in c])
+        self.assertEqual((y0, y1), (-250, 800))
+        for eng, letra in (("ŋ", "n"), ("Ŋ", "N")):
+            with self.subTest(caracter=eng):
+                x0, y0, x1, y1 = caja_de([t for c in self.contornos(salida, eng) for t in c])
+                self.assertEqual(y0, -250)
+                self.assertEqual(x1, caja_de([t for c in self.contornos(salida, letra) for t in c])[2])
+        _, _, _, y1 = caja_de([t for c in self.contornos(salida, "ŋ") for t in c])
+        self.assertEqual(y1, 500)  # sin el punto de la `j`
+
     def test_acento_sale_de_una_letra_acentuada_de_la_fuente(self):
         """Sin `´`, `` ` `` ni apóstrofo, pero con é dibujada: el agudo es é menos e."""
         acento = [[(250, 720), (330, 720), (430, 820), (350, 820)]]
@@ -223,10 +276,10 @@ class Lote(unittest.TestCase):
                                     "__MACOSX/Prueba/._prueba.ttf": b"basura de mac"})
         codigo, salida, errores = self.correr()
         self.assertEqual(codigo, 0, errores)
-        nueva = self.salidas / "prueba-latinext.ttf"
+        nueva = self.salidas / "prueba-fontificata.ttf"
         self.assertIn(ord("ñ"), TTFont(nueva).getBestCmap())
-        self.assertEqual((self.salidas / "prueba-latinext-licencia.txt").read_bytes(), b"licencia del zip")
-        muestra = (self.salidas / "prueba-latinext-muestra.html").read_text(encoding="utf-8")
+        self.assertEqual((self.salidas / "prueba-fontificata-licencia.txt").read_bytes(), b"licencia del zip")
+        muestra = (self.salidas / "prueba-fontificata-muestra.html").read_text(encoding="utf-8")
         self.assertIn("data:font/ttf;base64,", muestra)  # la original no está en disco
         self.assertNotIn("aviso", errores)
         self.assertNotIn("_prueba", salida)
@@ -268,7 +321,7 @@ class Lote(unittest.TestCase):
         crudo = io.BytesIO()
         consola = io.TextIOWrapper(crudo, encoding="cp1252")
         with contextlib.redirect_stdout(consola), contextlib.redirect_stderr(io.StringIO()):
-            codigo = principal(["--revisar"])  # latinext lista ł ˝ ˚, fuera de cp1252
+            codigo = principal(["--revisar"])  # fontificata lista ł ˝ ˚, fuera de cp1252
         consola.flush()
         self.assertEqual(codigo, 0)
         self.assertIn(b"se pueden agregar", crudo.getvalue())

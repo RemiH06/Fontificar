@@ -2,20 +2,28 @@
 
 ## Siguiente sesión
 
-Iteraciones 1, 2 y 3 cerradas el 2026-10-20 (`!y2kbug-latinext.ttf` revisada en un editor real: funciona).
-
-Iteración 4 (paquete, fuentes cualesquiera y CFF) implementada el 2026-10-20: `fontificar.py` partido en el paquete `fontificar/`; ya no se detiene en el primer faltante, se adapta a lo que trae la fuente y escribe TrueType u OpenType CFF. 61 pruebas en verde (44 de Y2KBUG, sin cambiar ninguna aserción, y 17 sobre fuentes sintéticas). Y2KBUG sale idéntica en los tres idiomas (mismos contornos y avances que antes). Comic Runes, Fortuna Dot y Samarkan cubren los tres idiomas sin omitidos; revisadas en Edge sin interfaz.
+Iteración 6 (`fontificata`) cerrada el 2026-10-20: 87 pruebas en verde, ya es el idioma por omisión del CLI. Skill de Fontificar actualizada (en `48.SkillShot` y sincronizada a `~/.claude/skills/`, más su línea en el README del hub). `fonts/in/` reordenada: suelta solo `!y2kbug.ttf` (y su `read_me.txt`), cada fuente de prueba extra con su zip en su subcarpeta (`ComicRunes/`, `FortunaDot/`, `Liverpool/` solo el zip, `Samarkan/`) y `Y2KBUG.zip` en `zips/`.
 
 Siguiente, en este orden:
 
-1. Iteración 6, idioma `fontificata` (alcance confirmado el 2026-10-20, ver abajo). Al cerrarla, pasa a ser el idioma por omisión del CLI.
-2. Iteración 5 cerrada el 2026-10-20 (70 pruebas en verde; probada con `Y2KBUG.zip` y con el comando instalado en un venv aparte).
-3. Skill de Fontificar hecha el 2026-10-20 en `48.SkillShot/Skills/fontificar/` (integrada en `skill-selector` y el README del hub, sincronizada a `~/.claude/skills/`). Al cerrar la iteración 6, actualizarla: idioma `fontificata` y su nuevo valor por omisión.
-4. Logo de Fontificar.
-5. Documentación simple (qué hace, cómo se usa, ejemplo original contra nueva), con piezas de los temas `apolo` o `bookworm` de `37.iroFactory`.
-6. README raíz con la skill `readme-generator`.
+1. Logo de Fontificar.
+2. Documentación simple (qué hace, cómo se usa, ejemplo original contra nueva), con piezas de los temas `apolo` o `bookworm` de `37.iroFactory`.
+3. README raíz con la skill `readme-generator`.
 
-Riesgo pendiente: los zips de prueba (`Liverpool.zip`, `Comic-Runes.zip`, `Fortuna-Dot.zip`, `Samarkan-Normal.zip`) están sueltos en `fonts/in/`, así que `fontificar` sin argumentos los procesa (Liverpool prohíbe modificarla). Moverlos a su subcarpeta.
+Mejoras visuales posibles (no bloquean): la tilde hecha con la `s` acostada sale chica y el caron de Samarkan, grande (viene de sus agudo y grave, que son altos). Þ de Samarkan sale rara (su `P` es una `p` con descendente). ¢ de Y2KBUG lleva una diagonal muy pesada (la `/` de la fuente es ancha).
+
+Iteración 6, `fontificata` (implementada):
+
+- `latinext` más Ð ð Þ þ Ŋ ŋ y los símbolos de Latin-1 y Windows-1252: ‘ ’ ‚ “ ” „, rayas (U+2013, U+2014), … •, ‹ › « », ª º, ¹ ² ³, ¼ ½ ¾, € £ ¢ ¥, © ®, ° ± × ÷ ¬ ¦ § ¶ ¤ µ. Sufijo de familia `Fontificata`. Fuera: Latin Extended-B, vietnamita, ‰ † ‡ ™ ƒ.
+- Letras en `especiales.py`; símbolos en `simbolos.py` (`SIMBOLOS`), que `_derivar` consulta después de `ESPECIALES`. `guion`, `diagonal`, `tachado` y `auxiliar` de `especiales.py` pasaron a públicos para reusarse.
+- Ð es la forma de Đ; ð es la `d` con la diagonal a 0.8; Þ es la `P` aplastada a 0.75 desde la base más un asta completa (se refleja si la `P` tiene el asta a la derecha); þ es la `b` encimada con la `p` (solo si la `p` baja y la `b` sube); ŋ Ŋ son la `n` `N` encimadas con la `j` `J` sin punto, alineadas por la derecha (solo si la `j` baja). En Y2KBUG, Comic Runes y Fortuna se omiten þ Ŋ ŋ (sin descendentes).
+- ’ es la coma subida a la altura de las mayúsculas (sin coma, el apóstrofo); ‘ es ’ girada; ‚ es ’ bajada a donde baja la coma; las dobles son la sencilla dos veces, a media tinta de distancia. ‹ › son `<` `>` a 0.6; « » son ‹ › dos veces, encimados.
+- Rayas: el guion estirado a medio em y a un em, con los márgenes del guion. … son tres puntos con su avance; • es el punto macizo al doble (tope 0.3 de las mayúsculas) a la altura del guion.
+- ª º: la letra a 0.4 de las mayúsculas, arriba, con una raya debajo. ¹ ² ³: el dígito a 0.6, arriba. ¼ ½ ¾: dígitos a 0.5 (arriba y en la línea base) con la diagonal entre ellos.
+- € ¥: la letra con dos barras de guion; £: la `L` tachada a 0.4; ¢: la `c` con la diagonal a 1.3 de su alto; © ®: la letra dentro del hueco de la `O` (a la mitad de la `O` si no tiene hueco); °: la `o` a 0.35; ¤: la `o` con un punto en cada esquina.
+- ± × ÷ ¬: `+` con barra, `+` girado 45°, guion con dos puntos, guion con pata. ¦: la `|` partida. §: dos `s` encimadas. ¶: la `P` reflejada más un asta. µ: la `μ` griega o la `u` con una pata hasta el descendente.
+- Respaldos hechos con el guion para fuentes que no traen `+ | < >` (Comic Runes, Samarkan, Fortuna): `+` es el guion cruzado con el guion parado, `|` el guion parado, ‹ › dos brazos de guion a 35°. Las astas (Þ ¶ µ ¦) se hacen con el guion parado (`asta_vertical`), no con el punto estirado: en Y2KBUG el punto es redondo y salían elipses.
+- Comic Runes, Fortuna y Samarkan cubren todo salvo þ Ŋ ŋ (Samarkan sí saca þ ŋ: tiene descendentes); revisadas en Edge sin interfaz.
 
 Iteración 5, fácil de usar (implementada):
 
@@ -29,16 +37,6 @@ Iteración 5, fácil de usar (implementada):
 - Idioma por omisión: `latinext` mientras no exista `fontificata`; después, `fontificata`.
 - Fuera: interfaz gráfica, `.bat` de arrastrar y soltar, varios idiomas en una corrida.
 - Detalles de la implementación: `fontificar()` acepta bytes y `salida=None` (no escribe, para `--revisar`); la muestra incrusta la original como `data:` cuando viene de un zip; el zip ignora `__MACOSX/` y `._*` y rechaza archivos de más de 64 MB; dos entradas con la misma salida dan error en vez de encimarse; el CLI devuelve 1 si alguna fuente falló; la consola cp1252 reemplaza lo que no sabe mostrar (antes `˚` tronaba y se reportaba como fuente dañada). Se instala solo editable: el comando busca `fonts/` junto al paquete.
-
-Iteración 6, `fontificata` (alcance confirmado, sin más símbolos por ahora): el idioma más completo posible en uno solo. `latinext` no lo es: deja fuera los símbolos de Latin-1 y Windows-1252. `fontificata` = `latinext` más lo que se pueda derivar de esos símbolos, y lo que no, se omite con su motivo como siempre:
-
-- Comillas y raya: ‘ ’ ‚ “ ” „ (del apóstrofo y la coma), U+2013 y U+2014, las rayas (guion estirado; en el código van por su codepoint, no como caracter, por la regla del guion largo), … (tres puntos), • (punto), ‹ › « » (de `<` `>` reducidos).
-- Ordinales y superíndices: ª º (a y o reducidas con raya), ¹ ² ³ ¼ ½ ¾ (dígitos reducidos, sin tocar los originales).
-- Monedas y signos: € £ ¢ ¥ (letra más barras), © ® (letra dentro de la `o` o de un círculo), ° ± × ÷ ¬ ¦ § ¶ ¤ µ.
-- Letras pendientes: Ð (es la forma de Đ), ð Þ þ Ŋ ŋ, intentarlas y omitirlas si no salen.
-- Fuera: Latin Extended-B y vietnamita (acentos apilados, piden GPOS o compuestos dobles).
-
-Mejoras visuales posibles (no bloquean): la tilde hecha con la `s` acostada sale chica y el caron de Samarkan, grande (viene de sus agudo y grave, que son altos).
 
 Decisiones tomadas en la iteración 4:
 

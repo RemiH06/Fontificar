@@ -74,7 +74,7 @@ def _unida_solo_abajo(obra, nombre):
     return unida(y0 + grosor / 2) and not unida(y1 - grosor / 2)
 
 
-def _auxiliar(obra, clave, grabado, ancho, piso):
+def auxiliar(obra, clave, grabado, ancho, piso):
     """Glifo sin mapear con `grabado` puesto en `piso` y un margen de un grosor por lado."""
     if clave not in obra.derivados:
         margen = grosor_de_punto(obra)
@@ -85,7 +85,7 @@ def _auxiliar(obra, clave, grabado, ancho, piso):
     return obra.derivados[clave]
 
 
-def _guion(obra):
+def guion(obra):
     """El guion de la fuente o, si no trae ninguno, el punto estirado a lo ancho a media
     altura de la `x`."""
     try:
@@ -95,32 +95,43 @@ def _guion(obra):
     grosor = grosor_de_punto(obra)
     ancho = 0.3 * obra.upm
     medio = limites(obra.conjunto, obra.letra("xoXO"))[3] / 2
-    return _auxiliar(obra, "guion", trazo_de_punto(obra, ancho, grosor), ancho, medio - grosor / 2)
+    return auxiliar(obra, "guion", trazo_de_punto(obra, ancho, grosor), ancho, medio - grosor / 2)
 
 
-def _diagonal(obra):
+def diagonal(obra):
     """La diagonal de la fuente o, si no trae ninguna, el punto estirado e inclinado de
     la línea base a la altura de las mayúsculas."""
     try:
         return obra.signo(*DIAGONALES)
     except ValueError:
         pass
-    alto =limites(obra.conjunto, obra.letra("HIOA"))[3]
+    alto = limites(obra.conjunto, obra.letra("HIOA"))[3]
     trazo = trazo_de_punto(obra, grosor_de_punto(obra), alto, 0.5)
     x0, _, x1, _ = caja_de(trazo.value)
-    return _auxiliar(obra, "diagonal", trazo, x1 - x0, 0)
+    return auxiliar(obra, "diagonal", trazo, x1 - x0, 0)
+
+
+def asta_vertical(obra, ancho, alto):
+    """El guion parado: un trazo vertical de `ancho` por `alto` con la esquina inferior
+    izquierda en el origen. Conserva los remates del guion, a diferencia del punto
+    estirado (que en una fuente de punto redondo sale como elipse)."""
+    origen = guion(obra)
+    gx0, gy0, gx1, gy1 = limites(obra.conjunto, origen)
+    a, k = ancho / (gy1 - gy0), alto / (gx1 - gx0)
+    # (x, y) pasa a (-a * y + dx, k * x + dy): lo largo del guion se vuelve lo alto.
+    return transformado(obra, (origen, (0, k, -a, 0, a * gy1, -k * gx0)))
 
 
 def _punto_medio(obra):
     """`·`: un punto a la altura del centro del guion."""
-    _, y0, _, y1 = limites(obra.conjunto, _guion(obra))
+    _, y0, _, y1 = limites(obra.conjunto, guion(obra))
     return puntos(obra, 1, centro=(y0 + y1) / 2)
 
 
 def _superpuesto(obra, base):
     """La diagonal (`/`) centrada sobre `base` a la misma altura (Ø: O más `slash`)."""
     conjunto = obra.conjunto
-    base, encima = obra.letra(base), _diagonal(obra)
+    base, encima = obra.letra(base), diagonal(obra)
     bx0, _, bx1, _ = limites(conjunto, base)
     ex0, _, ex1, _ = limites(conjunto, encima)
     return componentes((base, 0, 0), (encima, (bx0 + bx1) / 2 - (ex0 + ex1) / 2, 0)), obra.avance(base)
@@ -145,7 +156,7 @@ def _eszett(obra, b, s):
     return _seguido(obra, s, s)
 
 
-def _tachado(obra, letra, trazo, donde, altura):
+def tachado(obra, letra, trazo, donde, altura):
     """Letra cruzada por un trazo (Đ Ħ Ł Ŧ), con el centro a `altura` (fracción de la
     caja; puede depender del lado del asta).
 
@@ -158,11 +169,11 @@ def _tachado(obra, letra, trazo, donde, altura):
     base = obra.letra(letra)
     plano = trazo == "-"
     try:
-        origen = _guion(obra) if plano else _diagonal(obra)
+        origen = guion(obra) if plano else diagonal(obra)
     except ValueError:
         if plano:
             raise
-        origen, plano = _guion(obra), True
+        origen, plano = guion(obra), True
     bx0, by0, bx1, by1 = limites(conjunto, base)
     tx0, ty0, tx1, ty1 = limites(conjunto, origen)
     asta = ancho_de_asta(obra)
@@ -217,6 +228,65 @@ def _copia(obra, letra):
     return componentes((origen, 0, 0)), obra.avance(origen)
 
 
+def _baja(obra, nombre):
+    """¿El glifo baja de la línea base al menos un décimo de em (tiene descendente)?"""
+    return limites(obra.conjunto, nombre)[1] < -0.1 * obra.upm
+
+
+def _encimadas(obra, piezas):
+    """Contornos de varias piezas (nombre o grabado, dx) encimados en un solo glifo."""
+    grabado = RecordingPen()
+    for pieza, dx in piezas:
+        if isinstance(pieza, str):
+            grabado.value += transformado(obra, (pieza, (1, 0, 0, 1, dx, 0))).value
+        else:
+            pieza.replay(TransformPen(grabado, (1, 0, 0, 1, dx, 0)))
+    return grabado
+
+
+def _thorn_minuscula(obra):
+    """þ: la `b` encimada con la `p` (el asta de la `b` sube, el de la `p` baja y la
+    panza es la misma), alineadas por la izquierda. Solo si la `p` tiene descendente
+    y la `b` ascendente."""
+    b, p = obra.letra("b"), obra.letra("p")
+    conjunto = obra.conjunto
+    if not _baja(obra, p):
+        raise ValueError("la 'p' no tiene descendente")
+    if limites(conjunto, b)[3] < limites(conjunto, p)[3] + 0.1 * obra.upm:
+        raise ValueError("la 'b' no tiene ascendente")
+    dx = round(limites(conjunto, b)[0] - limites(conjunto, p)[0])
+    return _encimadas(obra, [(b, 0), (p, dx)]), max(obra.avance(b), obra.avance(p) + dx)
+
+
+def _thorn_mayuscula(obra):
+    """Þ: la `P` aplastada a 0.75 desde la base (su panza queda a media altura) más un
+    asta de toda la altura encimada en la suya (si la `P` la tiene a la derecha, se
+    refleja)."""
+    conjunto = obra.conjunto
+    p = obra.letra("P")
+    x0, y0, x1, y1 = limites(conjunto, p)
+    asta = ancho_de_asta(obra)
+    espejo = _lado_del_asta(obra, p) == "derecha"
+    matriz = (-1 if espejo else 1, 0, 0, 0.75, x0 + x1 if espejo else 0, 0.25 * y0)
+    grabado = transformado(obra, (p, matriz))
+    asta_vertical(obra, asta, y1 - y0).replay(TransformPen(grabado, (1, 0, 0, 1, x0, y0)))
+    return grabado, obra.avance(p)
+
+
+def _eng(obra, letra, jota):
+    """ŋ (Ŋ): la `n` encimada con la `j` sin punto, alineadas por la derecha: el asta
+    derecha de la `n` baja con el gancho de la `j`. Solo si la `j` tiene descendente."""
+    conjunto = obra.conjunto
+    base, j = obra.letra(letra), obra.letra(jota)
+    if not _baja(obra, j):
+        raise ValueError(f"la '{jota}' no tiene descendente")
+    gancho = sin_punto(obra, jota)[0] if tiene_punto(obra, j) else j
+    derecha = caja_de(gancho.value)[2] if gancho is not j else limites(conjunto, j)[2]
+    dx = round(limites(conjunto, base)[2] - derecha)
+    return _encimadas(obra, [(base, 0), (gancho, dx)]), obra.avance(base)
+
+
+
 # Letras que no salen por descomposición NFD (destino: cómo y con qué argumentos).
 # Usan `obra.cmap`, que incluye lo ya agregado: `·` va antes que Ŀ en los idiomas.
 ESPECIALES = {
@@ -229,18 +299,24 @@ ESPECIALES = {
     0xDF: (_eszett, "Bs"),
     0x1E9E: (_eszett, "BS"),
     0xB7: (_punto_medio, ()),
-    0x110: (_tachado, ("D", "-", "asta", {"izquierda": 0.5, "derecha": 0.8})),
-    0x111: (_tachado, ("d", "-", "asta", 0.8)),
-    0x126: (_tachado, ("H", "-", "asta", 0.8)),
-    0x127: (_tachado, ("h", "-", "asta", 0.8)),
-    0x141: (_tachado, ("L", "/", "asta", 0.5)),
-    0x142: (_tachado, ("l", "/", "asta", 0.5)),
-    0x166: (_tachado, ("T", "-", "centro", 0.5)),
-    0x167: (_tachado, ("t", "-", "centro", 0.5)),
+    0x110: (tachado, ("D", "-", "asta", {"izquierda": 0.5, "derecha": 0.8})),
+    0x111: (tachado, ("d", "-", "asta", 0.8)),
+    0x126: (tachado, ("H", "-", "asta", 0.8)),
+    0x127: (tachado, ("h", "-", "asta", 0.8)),
+    0x141: (tachado, ("L", "/", "asta", 0.5)),
+    0x142: (tachado, ("l", "/", "asta", 0.5)),
+    0x166: (tachado, ("T", "-", "centro", 0.5)),
+    0x167: (tachado, ("t", "-", "centro", 0.5)),
     0x13F: (_con_punto_medio, "L"),
     0x140: (_con_punto_medio, "l"),
     0x132: (_seguido, "IJ"),
     0x133: (_seguido, "ij"),
     0x131: (sin_punto, "i"),
     0x138: (_kra, ()),
+    0xD0: (tachado, ("D", "-", "asta", {"izquierda": 0.5, "derecha": 0.8})),  # Ð tiene la forma de Đ
+    0xF0: (tachado, ("d", "/", "asta", 0.8)),
+    0xDE: (_thorn_mayuscula, ()),
+    0xFE: (_thorn_minuscula, ()),
+    0x14A: (_eng, ("N", "J")),
+    0x14B: (_eng, ("n", "j")),
 }

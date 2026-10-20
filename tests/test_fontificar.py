@@ -326,5 +326,47 @@ class PruebasLatinExt(Comunes, unittest.TestCase):
                 self.assertGreater(self.area(conjunto, self.glifo(acento)) * self.area(conjunto, self.glifo(origen)), 0)
 
 
+@unittest.skipUnless(ENTRADA.is_file(), "falta la fuente de prueba en fonts/in")
+class PruebasFontificata(Comunes, unittest.TestCase):
+    IDIOMA = "fontificata"
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        # Y2KBUG no tiene descendentes: þ Ŋ ŋ se omiten y no cuentan en lo demás.
+        cls.objetivo = [c for c in cls.objetivo if c not in cls.omitidos]
+
+    def test_solo_omite_las_letras_que_piden_descendente(self):
+        self.assertEqual(set(self.omitidos), {ord("þ"), ord("Ŋ"), ord("ŋ")})
+
+    def test_comillas_y_puntos_que_la_fuente_trae_no_se_tocan(self):
+        for caracter in "‘’“”…":
+            with self.subTest(caracter=caracter):
+                self.assertNotIn(ord(caracter), self.nuevos)
+                self.assertEqual(self.glifo(caracter), self.original.getBestCmap()[ord(caracter)])
+
+    def test_rayas_miden_medio_y_un_em(self):
+        self.assertEqual(self.avance("\u2013"), 500)
+        self.assertEqual(self.avance("\u2014"), 1000)
+
+    def test_por_es_mas_girado(self):
+        conjunto = self.salida.getGlyphSet()
+        area = self.area(conjunto, self.glifo("+"))
+        self.assertAlmostEqual(self.area(conjunto, self.glifo("×")), area, delta=abs(area) / 100)
+
+    def test_superindices_llegan_a_la_altura_de_las_mayusculas(self):
+        alto = self.caja([t for c in self.contornos(self.salida, self.glifo("H")) for t in c])[3]
+        for caracter in "¹²³ªº°":
+            with self.subTest(caracter=caracter):
+                techo = self.caja([t for c in self.contornos(self.salida, self.glifo(caracter)) for t in c])[3]
+                self.assertAlmostEqual(techo, alto, delta=1)
+
+    def test_encerradas_conservan_la_o(self):
+        de_o = self.contornos(self.salida, self.glifo("O"))
+        for caracter in "©®":
+            with self.subTest(caracter=caracter):
+                self.assertEqual(self.contornos(self.salida, self.glifo(caracter))[: len(de_o)], de_o)
+
+
 if __name__ == "__main__":
     unittest.main()

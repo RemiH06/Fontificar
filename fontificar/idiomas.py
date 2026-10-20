@@ -24,3 +24,10 @@ IDIOMAS = {
         "Latino Extendido", "LatinoExtendido",
         "Łódź, wąż, žluťoučký kůň, İzmir, ağaç, Đakovo, Ħamrun, Őrség, Straße, ¿Qué tal?"),
 }
+# El más completo: `latinext` más las letras y los símbolos que faltan de Latin-1 y
+# Windows-1252. ’ va antes que las demás comillas y ‹ › antes que « ».
+# Las rayas van por su codepoint (U+2013, U+2014), no como caracter.
+IDIOMAS["fontificata"] = Idioma(
+    IDIOMAS["latinext"].caracteres + "ÐðÞþŊŋ’‘‚”“„\u2013\u2014…•‹›«»ªº¹²³¼½¾€£¢¥©®°±×÷¬¦§¶¤µ",
+    "Fontificata", "Fontificata",
+    "«¿Qué tal?», dijo ‘Þór’ en Łódź: 3½ kg a 25 °C, ±5 € × 2 = 10 £, ª º ¹ ² ³ § ¶ © ®…")

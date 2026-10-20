@@ -11,6 +11,7 @@ from .acentos import ARRIBA, MARCAS, compuesto, marca
 from .especiales import ESPECIALES, GIROS, girado, sin_punto, tiene_punto
 from .glifos import Obra, limites
 from .idiomas import IDIOMAS
+from .simbolos import SIMBOLOS
 
 # Letras que pierden el punto bajo un acento de arriba (í, ĵ) y su versión sin punto.
 SIN_PUNTO = {"i": 0x131, "j": 0x237}
@@ -100,8 +101,9 @@ def _derivar(obra, caracter):
     codepoint = ord(caracter)
     if codepoint in GIROS:
         return girado(obra, obra.glifo(GIROS[codepoint]))
-    if codepoint in ESPECIALES:
-        derivar, argumentos = ESPECIALES[codepoint]
+    especial = ESPECIALES.get(codepoint) or SIMBOLOS.get(codepoint)
+    if especial:
+        derivar, argumentos = especial
         return derivar(obra, *argumentos)
     letra, *resto = unicodedata.normalize("NFD", caracter)
     if len(resto) != 1 or ord(resto[0]) not in MARCAS:

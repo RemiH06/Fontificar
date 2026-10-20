@@ -135,8 +135,8 @@ def principal(argumentos=None):
         epilog=f"Sin entradas procesa lo que esté suelto en {ENTRADAS} y escribe en {SALIDAS}.")
     analizador.add_argument("entradas", nargs="*",
                             help=".ttf, .otf, .zip o carpeta; si no existe tal cual, se busca en fonts/in")
-    analizador.add_argument("--idioma", default="latinext", choices=sorted(IDIOMAS),
-                            help="qué caracteres agregar (por omisión, latinext: el más completo)")
+    analizador.add_argument("--idioma", default="fontificata", choices=sorted(IDIOMAS),
+                            help="qué caracteres agregar (por omisión, fontificata: el más completo)")
     analizador.add_argument("-o", "--salida",
                             help="fuente de salida, solo con una fuente de entrada "
                             "(por omisión, fonts/out/<nombre>-<idioma>.<ext>)")
