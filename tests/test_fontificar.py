@@ -8,6 +8,7 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ))  # con `python -I` el directorio actual no entra solo
 
+from fontTools.pens.areaPen import AreaPen  # noqa: E402
 from fontTools.pens.boundsPen import BoundsPen  # noqa: E402
 from fontTools.pens.recordingPen import DecomposingRecordingPen, RecordingPen  # noqa: E402
 from fontTools.ttLib import TTFont  # noqa: E402
@@ -195,6 +196,33 @@ class PruebasLatin1(Comunes, unittest.TestCase):
                 self.assertLess(inicio_segunda, fin_primera)
                 self.assertGreater(self.avance(ligadura), self.avance(primera))
                 self.assertLess(self.avance(ligadura), self.avance(primera) + self.avance(segunda))
+
+    def test_eszett_es_b_volteada(self):
+        cmap = self.salida.getBestCmap()
+        conjunto = self.salida.getGlyphSet()
+        eszett, b = cmap[ord("ß")], cmap[ord("B")]
+        _, y0, _, y1 = self.caja([t for c in self.contornos(self.salida, b) for t in c])
+        esperado = {(x, y0 + y1 - y) for c in self.contornos(self.salida, b)
+                    for _, args in c for x, y in args}
+        obtenido = {p for c in self.contornos(self.salida, eszett) for _, args in c for p in args}
+        self.assertEqual(obtenido, esperado)
+        self.assertEqual(self.avance("ß"), self.avance("B"))
+        self.assertAlmostEqual(self.area(conjunto, eszett), self.area(conjunto, b))
+
+    def test_espejos_conservan_el_sentido_del_contorno(self):
+        """El agudo (espejo de `grave`), la cedilla (`comma` volteada) y la ß (`B`
+        volteada) giran en el mismo sentido que su origen."""
+        cmap = self.salida.getBestCmap()
+        conjunto = self.salida.getGlyphSet()
+        for nuevo, origen in (("´", "`"), ("¸", ","), ("ß", "B")):
+            with self.subTest(caracter=nuevo):
+                self.assertGreater(self.area(conjunto, cmap[ord(nuevo)])
+                                   * self.area(conjunto, cmap[ord(origen)]), 0)
+
+    def area(self, conjunto, nombre):
+        lapiz = AreaPen(conjunto)
+        conjunto[nombre].draw(lapiz)
+        return lapiz.value
 
     def test_sobre_fuente_en_espanol_solo_agrega_lo_que_falta(self):
         espanol = Path(self.tmp.name) / "es.ttf"

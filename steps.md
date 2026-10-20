@@ -4,15 +4,24 @@
 
 Iteración 1 cerrada el 2026-10-20.
 
-Iteración 2 (Latin-1) implementada el 2026-10-20: `--idioma latin1` agrega 67 glifos, 25 pruebas en verde, `fonts/muestra.html` revisada con Edge sin interfaz (ningún caracter cae a otra fuente). Falta:
+Iteración 2 (Latin-1) cerrada el 2026-10-20: `--idioma latin1` agrega 67 glifos, 25 pruebas en verde, `!y2kbug-latin1.ttf` y `!y2kbug-es.ttf` revisadas en un editor real sin problemas.
 
-1. Revisión visual en un editor real con `fonts/out/!y2kbug-latin1.ttf` instalada (sobre todo `ç`, `å`, `ø`, `æ`, `œ`, `î`, `ï`). Si algo se ve mal, las perillas son `ESCALA_*` y `HUECO` en `fontificar.py`.
-2. Reinstalar `fonts/out/!y2kbug-es.ttf`: cambió el avance de `í` (210 a 271, ver decisiones).
-3. Con eso, cerrar la iteración 2. La 3 (Latin Extended-A) necesita decidir de dónde sale el caron (ˇ): candidato, `asciicircum` reducido y volteado.
+ß agregada a `latin1` el 2026-10-20 (68 glifos, 27 pruebas en verde, revisada en `fonts/muestra.html` con Edge sin interfaz). Ambas fuentes de `fonts/out` se regeneraron.
+
+Siguiente:
+
+1. Reinstalar `!y2kbug-latin1.ttf` (trae la ß) y `!y2kbug-es.ttf` (el agudo cambió de sentido de contorno, no de forma) y revisar la ß en un editor real.
+2. Iteración 3 (Latin Extended-A): decidir de dónde sale el caron (ˇ), candidato `asciicircum` reducido y volteado. La ẞ (U+1E9E) puede apuntar al glifo de la ß porque la fuente es unicase. La ſ (U+017F) no se hace: no hace falta.
+
+Decisiones tomadas al agregar la ß:
+
+- ß: `B` volteada en vertical. En Y2KBUG la `B` es un asta más un "3" unido abajo; volteada, la unión queda arriba como en la ß. Se descartó `J` girada más `3`: sale del doble de ancho y se lee "[3".
+- `_transformado` revierte los contornos cuando la matriz es un espejo, para conservar el sentido del original. Antes el agudo y la cedilla salían en sentido contrario al de `grave` y `comma`.
+- Solo TTF por ahora: el camino OTF/CFF queda fuera hasta nuevo aviso.
 
 Decisiones tomadas en la iteración 2:
 
-- Idioma nuevo `latin1`: letras de Latin-1 más Œ œ Ÿ (Windows-1252) y los acentos sueltos ´ ¨ ¸; sufijo de familia `Latino` (`!Y2KBUG Latino`). Fuera: ß Ð ð Þ þ (no se derivan de nada que traiga la fuente) y los símbolos de Latin-1 que no son letras (« » ª º £ etc.).
+- Idioma nuevo `latin1`: letras de Latin-1 más Œ œ Ÿ (Windows-1252) y los acentos sueltos ´ ¨ ¸; sufijo de familia `Latino` (`!Y2KBUG Latino`). Fuera: Ð ð Þ þ (no se derivan de nada que traiga la fuente) y los símbolos de Latin-1 que no son letras (« » ª º £ etc.).
 - Los acentos sueltos se agregan solo si el idioma los usa: la salida `es` no cambia de lista.
 - `˚`: `period` a 0.6 (en Y2KBUG `period` ya es un anillo; la `o` reducida a tamaño de acento dejaba un trazo de ~14 unidades). Cambia lo decidido al cierre de la iteración 1.
 - `ˆ` (U+02C6): `asciicircum` a 0.6 de ancho y 0.45 de alto; completo mide 310 y subiría el ascendente a ~1080.
@@ -64,11 +73,11 @@ Decisiones tomadas en la iteración 1:
 | # | Meta | Incluye | Criterio de cierre |
 |---|---|---|---|
 | 1 | Español sobre una fuente | á é í ó ú ü ñ y sus mayúsculas, ¡ ¿ | Los criterios de arriba pasan con la fuente real |
-| 2 | Latin-1 (letras) | ç â ê î ô û à è ì ò ù ä ë ï ö å ø æ œ, entre otros; sin ß Ð ð Þ þ | Mismo chequeo sobre la lista ampliada |
+| 2 | Latin-1 (letras) | ç â ê î ô û à è ì ò ù ä ë ï ö å ø æ œ, entre otros, y ß; sin Ð ð Þ þ | Mismo chequeo sobre la lista ampliada |
 | 3 | Latin Extended-A | Polaco, checo, turco, etc.; anclas GPOS de marca si el posicionamiento fijo no alcanza | Mismo chequeo; acentos apilados legibles |
 
 ### Dudas abiertas
 
-- OTF/CFF: la fuente de prueba es TTF, así que el camino CFF (aplanar contornos con un pen) se difiere hasta tener una fuente OTF real para probarlo.
+Ninguna.
 
-Resueltas: v1 solo español; se aceptan acentos derivados de otros glifos; fuente de prueba Y2KBUG (TTF, licencia Larabie: modificar permitido sin tocar a-z ni 0-9, nombre se conserva y se aumenta); forma de uso: librería, CLI delgado y página de muestra.
+Resueltas: OTF/CFF queda fuera, solo TTF por ahora (2026-10-20); v1 solo español; se aceptan acentos derivados de otros glifos; fuente de prueba Y2KBUG (TTF, licencia Larabie: modificar permitido sin tocar a-z ni 0-9, nombre se conserva y se aumenta); forma de uso: librería, CLI delgado y página de muestra.

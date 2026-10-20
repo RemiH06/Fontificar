@@ -1,6 +1,6 @@
 """Fontificar: amplía la cobertura de una fuente TTF con glifos derivados.
 
-Idiomas: español (`es`) y Latin-1 (`latin1`: sus letras, más Œ œ Ÿ, sin ß Ð ð Þ þ).
+Idiomas: español (`es`) y Latin-1 (`latin1`: sus letras, más Œ œ Ÿ, sin Ð ð Þ þ).
 Los glifos que la fuente ya trae no se tocan; solo se agregan los que faltan.
 Los acentos se derivan de glifos existentes (`grave`, `asciitilde`,
 `asciicircum`, `period`, `comma`) en vez de dibujar contornos nuevos.
@@ -18,6 +18,7 @@ from urllib.parse import quote
 from fontTools.agl import UV2AGL
 from fontTools.pens.boundsPen import BoundsPen
 from fontTools.pens.recordingPen import DecomposingRecordingPen
+from fontTools.pens.reverseContourPen import ReverseContourPen
 from fontTools.pens.transformPen import TransformPen
 from fontTools.pens.ttGlyphPen import TTGlyphPen
 from fontTools.ttLib import TTFont
@@ -34,9 +35,9 @@ IDIOMAS = {
     "es": Idioma("áéíóúüñÁÉÍÓÚÜÑ¡¿´¨", "Español", "Espanol",
                  "Canción, pingüino, ¿Qué tal? ¡Hola!"),
     "latin1": Idioma(
-        "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝàáâãäåæçèéêëìíîïñòóôõöøùúûüýÿŒœŸ¡¿´¨¸",
+        "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæçèéêëìíîïñòóôõöøùúûüýÿŒœŸ¡¿´¨¸",
         "Latino", "Latino",
-        "Façade, crème brûlée, Ångström, smørrebrød, cœur, naïveté, ¿Qué tal?"),
+        "Façade, crème brûlée, Ångström, smørrebrød, cœur, naïveté, Straße, ¿Qué tal?"),
 }
 
 # Letras que se giran 180° (destino: origen).
@@ -78,12 +79,18 @@ def _agregar(fuente, nombre, glifo, avance):
 
 
 def _transformado(fuente, nombre, matriz):
-    """Glifo simple con el contorno de `nombre` transformado por `matriz`."""
+    """Glifo simple con el contorno de `nombre` transformado por `matriz`.
+
+    Un espejo (determinante negativo) invierte el sentido de los contornos; se
+    revierten para conservar el del original, que decide qué es relleno y qué hueco.
+    """
     conjunto = fuente.getGlyphSet()
     grabado = DecomposingRecordingPen(conjunto)
     conjunto[nombre].draw(grabado)
     lapiz = TTGlyphPen(conjunto)
-    grabado.replay(TransformPen(lapiz, matriz))
+    a, b, c, d = matriz[:4]
+    destino = ReverseContourPen(lapiz) if a * d - b * c < 0 else lapiz
+    grabado.replay(TransformPen(destino, matriz))
     return lapiz.glyph()
 
 
@@ -223,6 +230,14 @@ def _unido(fuente, cmap, izquierda, derecha):
     return lapiz.glyph(), dx + fuente["hmtx"][derecha][0]
 
 
+def _volteado(fuente, cmap, letra):
+    """Espejo vertical alrededor del centro de la caja (ß: en Y2KBUG la `B` es un asta
+    más un "3" unido abajo; volteada, la unión queda arriba como en la ß)."""
+    origen = _glifo_de(cmap, ord(letra))
+    _, y0, _, y1 = _limites(fuente.getGlyphSet(), origen)
+    return _transformado(fuente, origen, (1, 0, 0, -1, 0, y0 + y1)), fuente["hmtx"][origen][0]
+
+
 # Letras que no salen por descomposición NFD (destino: cómo y de qué caracteres).
 ESPECIALES = {
     0xD8: (_superpuesto, "O/"),
@@ -231,6 +246,7 @@ ESPECIALES = {
     0xE6: (_unido, "ae"),
     0x152: (_unido, "OE"),
     0x153: (_unido, "oe"),
+    0xDF: (_volteado, "B"),
 }
 
 
