@@ -10,9 +10,9 @@ Documentación hecha el 2026-10-20 en `docs/index.html` (lista para GitHub Pages
 
 Ojo al revisar en esta máquina: Windows tiene instaladas `!y2kbug-es`, `-latin1` y `-latinext` (de pruebas en un editor), y el navegador puede usarlas de respaldo en otras páginas.
 
-Siguiente:
+README raíz hecho el 2026-10-20 con `readme-generator` (en español, badge de Python, sin «Maintained» porque aún no está publicado). Licencia del código: MIT (`LICENSE`, la misma de iroFactory); las fuentes de `docs/fuentes/` conservan la de Larabie. Versión subida a 0.6.0 (iteración 6). La URL de clonado es la del remoto (`github.com/RemiH06/Fontificar`).
 
-1. README raíz con la skill `readme-generator` (enlazar a `docs/` y usar `docs/logo.svg`).
+Siguiente: nada pendiente del plan. Ideas sueltas: activar GitHub Pages desde `/docs`; favicon simplificado del logo; las mejoras visuales de abajo.
 
 Mejoras visuales posibles (no bloquean): la tilde hecha con la `s` acostada sale chica y el caron de Samarkan, grande (viene de sus agudo y grave, que son altos). Þ de Samarkan sale rara (su `P` es una `p` con descendente). ¢ de Y2KBUG lleva una diagonal muy pesada (la `/` de la fuente es ancha).
 
