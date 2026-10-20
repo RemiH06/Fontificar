@@ -4,7 +4,7 @@
 
 Iteración 1 casi cerrada: `fontificar.py`, `tests/` (11 pruebas en verde) y la muestra existen. Falta:
 
-1. Revisión visual en un editor real y en `fonts/muestra.html` (la corrida local se vio con FreeType a 150 px y los acentos no chocan). Si algún acento se ve pegado o muy lejos, ajustar `HUECO` en `fontificar.py`.
+1. Revisión visual en un editor real (instalar `fonts/out/!y2kbug-es.ttf` y escribir la frase de prueba). `fonts/muestra.html` ya se revisó el 2026-10-20 con Edge sin interfaz: sin cuadros vacíos, acentos parejos en mayúsculas y minúsculas, ¡ ¿ correctos. Si en el editor algún acento se ve pegado o muy lejos, ajustar `HUECO` en `fontificar.py`.
 2. Con eso, marcar el criterio "sin cuadros vacíos en un editor real" y cerrar la iteración 1.
 3. Iteración 2 (Latin-1): sumar `grave`, `circumflex`, `ring`, `cedilla` y las letras de la tabla. El mecanismo ya es general (`MARCAS`, descomposición NFD). Pendiente de decidir: `å`, `ø`, `æ`, `œ`, `ß` no se derivan por composición.
 
