@@ -2,7 +2,9 @@
 
 Amplía la cobertura de una fuente TTF/OTF (ñ, acentos, ¡ ¿ y después otros símbolos y alfabetos latinos) generando una copia con glifos nuevos. v1: solo español. Fuente de prueba: Y2KBUG de Ray Larabie.
 
-Forma de uso decidida: librería (`fontificar.py`) con un CLI delgado (`argparse`) y una página HTML estática de muestra (original contra nueva). Sin UI en la v1.
+Forma de uso decidida: librería (paquete `fontificar/`) con un CLI delgado (`argparse`) y una página HTML estática de muestra (original contra nueva). Sin UI en la v1. CLI: `python -I fontificar entrada.ttf salida.ttf --idioma es|latin1|latinext` desde la raíz (con `-I`, `-m fontificar` no encuentra el paquete).
+
+Principio: trabajar con lo que traiga cada fuente. TrueType y OpenType CFF. Cada acento tiene una cadena de respaldos (`MARCAS` en `acentos.py`); lo que no se puede derivar se omite con su motivo, nunca se detiene todo. Las reglas que dependen de la forma de una letra se miden en la fuente, no se suponen a partir de Y2KBUG.
 
 ## Cómo trabajamos (no negociable)
 
@@ -17,12 +19,27 @@ Forma de uso decidida: librería (`fontificar.py`) con un CLI delgado (`argparse
 ## Estructura
 
 ```
-fonts/in/      fuentes de entrada (no se versionan)
-fonts/out/     fuentes generadas (no se versionan)
-fontificar.py  núcleo y CLI
-tests/         pruebas (`python -I -m unittest discover -s tests`)
-steps.md       plan y traspaso entre sesiones
+fonts/in/                fuentes de entrada (no se versionan); las de prueba extra en subcarpetas
+fonts/out/               fuentes generadas y muestra.html (no se versionan)
+fontificar/idiomas.py    qué caracteres agrega cada idioma
+fontificar/glifos.py     `Obra` (la fuente en construcción, escribe en glyf o CFF) y utilidades de contorno
+fontificar/acentos.py    acentos derivados con sus respaldos (`MARCAS`) y letra más acento
+fontificar/especiales.py Ø Æ ß Đ Ł Ĳ ı ĸ y giros (`ESPECIALES`, `GIROS`)
+fontificar/nucleo.py     `fontificar()`, cmap, nombres y métricas
+fontificar/muestra.py    página HTML de muestra
+fontificar/cli.py        CLI
+tests/                   pruebas (`python -I -m unittest discover -s tests`); `sintetica.py` arma fuentes de prueba
+steps.md                 plan y traspaso entre sesiones
 ```
+
+## Fuentes de prueba extra (`fonts/in/<nombre>/`, 2026-10-20)
+
+Solo para pruebas locales: ninguna salida de estas se publica.
+
+- **Comic Runes** (`ComicRunes.otf`): CFF. Mapea é ñ á… y `` ` ´ ^ - / ' `` a glifos vacíos. CC BY-ND: no se comparten derivadas.
+- **Fortuna Dot** (`fortd.ttf`): letras hechas de puntos, Latin-1 completo, trae `˜ ˆ` pero no `~ ^`, B simétrica.
+- **Liverpool** (siete fuentes de Kreative): ya cubre Latin Extended-A salvo ẞ. **Su licencia prohíbe modificarla**: no generar salidas con ella.
+- **Samarkan** (`samarn.ttf`): 2048 upem, `kern`, estilo devanagari: la puntuación trae la línea de cabecera; su `ˆ` no es un acento.
 
 ## Hechos de la fuente de prueba (`fonts/in/!y2kbug.ttf`)
 

@@ -14,6 +14,7 @@ from fontTools.pens.recordingPen import DecomposingRecordingPen, RecordingPen  #
 from fontTools.ttLib import TTFont  # noqa: E402
 
 import fontificar  # noqa: E402
+from fontificar.acentos import ARRIBA, MARCAS  # noqa: E402
 
 ENTRADA = RAIZ / "fonts" / "in" / "!y2kbug.ttf"
 
@@ -27,7 +28,7 @@ class Comunes:
     def setUpClass(cls):
         cls.tmp = tempfile.TemporaryDirectory()
         cls.salida_ruta = Path(cls.tmp.name) / "salida.ttf"
-        cls.nuevos = fontificar.fontificar(ENTRADA, cls.salida_ruta, cls.IDIOMA)
+        cls.nuevos, cls.omitidos = fontificar.fontificar(ENTRADA, cls.salida_ruta, cls.IDIOMA)
         cls.original = TTFont(ENTRADA)
         cls.salida = TTFont(cls.salida_ruta)
         cls.objetivo = [ord(c) for c in fontificar.IDIOMAS[cls.IDIOMA].caracteres]
@@ -103,7 +104,7 @@ class Comunes:
                 techo = max(self.caja(c)[3] for c in de_base)
                 for acento in todos[len(de_base):]:
                     x0, y0, x1, y1 = self.caja(acento)
-                    if fontificar.MARCAS[ord(marcas[0])][2] != fontificar.ARRIBA:
+                    if MARCAS[ord(marcas[0])][2] != ARRIBA:
                         self.assertLessEqual(y1, piso)
                     else:
                         self.assertGreater(y0, techo)
@@ -230,8 +231,8 @@ class PruebasLatin1(Comunes, unittest.TestCase):
     def test_sobre_fuente_en_espanol_solo_agrega_lo_que_falta(self):
         espanol = Path(self.tmp.name) / "es.ttf"
         ampliada = Path(self.tmp.name) / "es-latin1.ttf"
-        agregados_es = fontificar.fontificar(ENTRADA, espanol, "es")
-        agregados = fontificar.fontificar(espanol, ampliada, "latin1")
+        agregados_es = fontificar.fontificar(ENTRADA, espanol, "es").nuevos
+        agregados = fontificar.fontificar(espanol, ampliada, "latin1").nuevos
         self.assertFalse(set(agregados) & set(agregados_es))
         self.assertEqual(set(agregados) | set(agregados_es), set(self.nuevos))
 

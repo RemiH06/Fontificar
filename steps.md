@@ -1,24 +1,32 @@
-crear skill de fontificar
-hacerlo lo más fácil de usar posible
-separar el fontificar.py en files py de funciones dedicadas
-probar con más fuentes
-
 # Pendientes
 
 ## Siguiente sesión
 
-Iteración 1 cerrada el 2026-10-20.
+Iteraciones 1, 2 y 3 cerradas el 2026-10-20 (`!y2kbug-latinext.ttf` revisada en un editor real: funciona).
 
-Iteración 2 (Latin-1) cerrada el 2026-10-20: `--idioma latin1` agrega 67 glifos, 25 pruebas en verde, `!y2kbug-latin1.ttf` y `!y2kbug-es.ttf` revisadas en un editor real sin problemas.
+Iteración 4 (paquete, fuentes cualesquiera y CFF) implementada el 2026-10-20: `fontificar.py` partido en el paquete `fontificar/`; ya no se detiene en el primer faltante, se adapta a lo que trae la fuente y escribe TrueType u OpenType CFF. 61 pruebas en verde (44 de Y2KBUG, sin cambiar ninguna aserción, y 17 sobre fuentes sintéticas). Y2KBUG sale idéntica en los tres idiomas (mismos contornos y avances que antes). Comic Runes, Fortuna Dot y Samarkan cubren los tres idiomas sin omitidos; revisadas en Edge sin interfaz.
 
-ß agregada a `latin1` el 2026-10-20 (68 glifos, 27 pruebas en verde, revisada en `fonts/muestra.html` con Edge sin interfaz). Ambas fuentes de `fonts/out` se regeneraron.
+Siguiente, en este orden:
 
-Iteración 3 (Latin Extended-A) implementada el 2026-10-20: `--idioma latinext` agrega 197 glifos (`!Y2KBUG Latino Extendido`), 44 pruebas en verde, revisada en Edge sin interfaz con los glifos nuevos en tamaño grande.
+1. Hacerlo lo más fácil de usar posible (necesita su planeación: ¿varios idiomas o carpetas de una vez?, ¿nombre de salida por omisión?, ¿instalar con `pip install -e`?).
+2. Al final, la skill de Fontificar.
 
-Siguiente:
+Mejoras visuales posibles (no bloquean): la tilde hecha con la `s` acostada sale chica y el caron de Samarkan, grande (viene de sus agudo y grave, que son altos).
 
-1. Instalar `fonts/out/!y2kbug-latinext.ttf` y revisarla en un editor real, sobre todo Đ Ħ Ł Ŧ, el ogonek (ą ę į ų), el breve (ğ ă) y el doble agudo (ő ű). Reinstalar también `!y2kbug-latin1.ttf` (trae la ß) y `!y2kbug-es.ttf` (el agudo cambió de sentido de contorno, no de forma). Las perillas son `ESCALA_*`, `HUECO` y la tabla `ESPECIALES` en `fontificar.py`.
-2. Con eso, cerrar la iteración 3 y el plan. Las ideas de hasta arriba (skill, facilidad de uso, partir `fontificar.py`, más fuentes) necesitan su propia planeación.
+Decisiones tomadas en la iteración 4:
+
+- Paquete `fontificar/` (idiomas, glifos, acentos, especiales, nucleo, muestra, cli). CLI: `python -I fontificar ...` corre la carpeta; `__main__.py` cambia `sys.path[0]` por la raíz.
+- Los glifos nuevos se arman como `RecordingPen` y `Obra.agregar` los escribe en `glyf` (componentes nativos) o en `CFF ` (componentes descompuestos con `T2CharStringPen`). CFF con CID y CFF2 se rechazan con error claro. En CFF también se renombran `fontNames`, `FamilyName` y `FullName`.
+- `fontificar()` devuelve `Resultado(nuevos, omitidos)`; lo que no se deriva se omite con su motivo y el CLI lo lista. Solo falla si no agrega nada.
+- Un caracter mapeado a un glifo vacío cuenta como faltante (Comic Runes): se mapea al glifo nuevo y el vacío se queda sin mapear. Los glifos con dibujo nunca se remapean.
+- Respaldos por acento (en orden, ver `MARCAS`): el suelto de la fuente si tiene forma de acento; el modificador (ˋ ˊ ˜ ˉ); el acento sacado de una letra acentuada de la fuente (é menos e); y las derivaciones de siempre, más: grave y agudo uno del otro, agudo del apóstrofo inclinado o del punto estirado, circunflejo de agudo más grave, caron del circunflejo volteado, macrón del punto estirado, anillo de `°` o de la `o`, breve de la `u`, tilde de la `s` acostada.
+- Un acento que la fuente ya trae se usa solo si tiene forma de acento (arriba: empieza sobre media `o` y mide menos de media `o`; abajo: no sube de un cuarto de `o`). El `ˆ` de Samarkan no pasa.
+- `Obra.signo` quita la línea de cabecera (contorno plano que cruza el avance) de la puntuación que sirve de materia prima. Los puntos usan todos los contornos exteriores, no solo el primero.
+- Guion y diagonal faltantes se hacen con el punto estirado, como glifos auxiliares sin mapear (`*.fontificar`).
+- Reglas medidas en vez de supuestas: grosor del asta por el tramo de tinta a un tercio de la `i` (sin serifas); lado del asta de Đ đ Ħ ħ Ł ł por muestreo (Đ a 0.5 de alto si el asta está a la izquierda, 0.8 si a la derecha); ß como `B` volteada solo si la `B` se une al asta abajo y no arriba, si no `ss` (ẞ: `SS`); ı es la `i` sin su punto (dos grupos verticales, el de arriba chico) y í ì î ï ĵ usan la letra sin punto; ĸ solo en fuentes unicase.
+- Subtablas de `cmap` de formato 0 solo reciben glifos con índice menor a 256 (Fortuna tronaba).
+- La muestra se escribe junto a la salida (`fonts/out/muestra.html`); antes iba a la carpeta común de entrada y salida, que podía ser la carpeta personal.
+- La licencia se busca con nombres comunes (`read_me`, `readme`, `license`, `FreeLicense`…) junto a la entrada.
 
 Decisiones tomadas en la iteración 3:
 
