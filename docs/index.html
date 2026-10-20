@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<!--
+Documentación de Fontificar.
+La piel (paleta de bookworm en claro y oscuro) y la base de prosa (doc-prose) vienen de
+iroFactory · https://github.com/RemiH06/iroFactory · Copyright (c) 2026 Hex (@RemiH06) · MIT.
+Las fuentes del ejemplo (fuentes/) son Y2KBUG de Ray Larabie y su versión ampliada, bajo la
+licencia de Larabie Fonts (fuentes/read_me.txt); esa licencia no la cubre la MIT.
+-->
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fontificar</title>
+<meta name="description" content="Amplía una fuente TTF u OTF con ñ, acentos, letras latinas y símbolos derivados de sus propios glifos.">
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<link rel="preconnect" href="https://fonts.bunny.net">
+<link href="https://fonts.bunny.net/css?family=libre-baskerville:400,400i,700&family=fira-code:400&display=swap" rel="stylesheet">
+<style>
+@font-face { font-family: "Y2KBUG original"; src: url("fuentes/%21y2kbug.ttf"); }
+@font-face { font-family: "Y2KBUG Fontificata"; src: url("fuentes/%21y2kbug-fontificata.ttf"); }
+
+/* Tokens · claro (bookworm: claro del bosque) */
+body {
+  --bg: #E8E0D0; --bg2: #DDD5C0; --bg3: #CEC4AC;
+  --text: #1C160C; --text2: #5A4E38; --border: #B8A888;
+  --accent: #425639; --accent-fill: #4A6040; --tilde: #D9480F;
+  --serif: 'Libre Baskerville', Georgia, serif; --mono: 'Fira Code', ui-monospace, monospace;
+  color-scheme: light;
+}
+/* Tokens · oscuro (bookworm: bosque nocturno) */
+body.dark {
+  --bg: #0C100A; --bg2: #121810; --bg3: #1A2016;
+  --text: #D8E0C8; --text2: #8A9878; --border: #2A3824;
+  --accent: #789D6C; --accent-fill: #5A7850; --tilde: #D9480F;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--serif); font-size: 16px; line-height: 1.75; transition: background-color .3s, color .3s; }
+a { color: var(--accent); text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Cabecera */
+.cabecera { display: flex; align-items: center; justify-content: space-between; gap: 16px; max-width: 1080px; margin: 0 auto; padding: 16px; }
+.marca { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--text); text-decoration: none; }
+.marca svg { width: 32px; height: 32px; }
+.tema { font: inherit; font-size: 14px; color: var(--text); background: var(--bg2); border: 1px solid var(--border); border-radius: 999px; padding: 6px 14px; min-height: 44px; cursor: pointer; }
+
+/* Portada */
+.portada { max-width: 1080px; margin: 0 auto; padding: 32px 16px 8px; display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 32px; align-items: center; }
+.portada svg { width: 100%; height: auto; }
+.portada h1 { font-size: clamp(36px, 6vw, 56px); line-height: 1.1; margin: 0 0 .3em; }
+.portada p { font-size: 1.12em; color: var(--text2); margin: 0; max-width: 60ch; }
+@media (max-width: 640px) { .portada { grid-template-columns: 1fr; } .portada svg { width: 120px; } }
+.punto-tinta { fill: var(--text); } .punto-tilde { fill: var(--tilde); }
+
+/* Doc Prose (iroFactory, recortado a lo que usa esta página) */
+.doc-layout { max-width: 1080px; margin: 0 auto; padding: 16px; display: grid; grid-template-columns: minmax(0, 1fr) 210px; gap: 40px; align-items: start; }
+.doc-toc { position: sticky; top: 24px; font-size: 14px; }
+@media (max-width: 960px) { .doc-layout { grid-template-columns: minmax(0, 1fr); } .doc-toc { position: static; order: -1; } }
+.doc :is(h2, h3) { line-height: 1.2; margin: 1.8em 0 .5em; scroll-margin-top: 24px; }
+.doc h2 { font-size: clamp(22px, 2.6vw, 28px); padding-bottom: .3em; border-bottom: 1px solid var(--border); }
+.doc h3 { font-size: 19px; }
+.doc p, .doc li, .doc dd { max-width: 72ch; }
+.doc p { margin: 0 0 1em; }
+.doc :is(ul, ol):not([class]) { margin: 0 0 1em; padding-left: 1.4em; }
+.doc :is(ul, ol):not([class]) li { margin: .25em 0; }
+.doc :is(ul, ol):not([class]) li::marker { color: var(--accent); font-weight: 700; }
+.doc dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: .5em 1.4em; margin: 0 0 1.2em; }
+.doc dt { font-family: var(--mono); font-size: .9em; color: var(--accent); }
+.doc dd { margin: 0; }
+@media (max-width: 560px) { .doc dl { grid-template-columns: minmax(0, 1fr); } .doc dd { margin-bottom: .6em; } }
+.doc code { font-family: var(--mono); font-size: .88em; background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: .05em .35em; }
+.doc pre { font-family: var(--mono); font-size: 14px; line-height: 1.6; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; overflow-x: auto; margin: 0 0 1.2em; }
+.doc pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+.doc .nota { color: var(--text2); font-size: .92em; }
+.doc-toc p { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--text2); margin: 0 0 .6em; }
+.doc-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--border); }
+.doc-toc a { display: block; padding: .3em .9em; margin-left: -1px; border-left: 2px solid transparent; color: var(--text2); text-decoration: none; }
+.doc-toc a:hover { color: var(--text); }
+.doc-toc a[aria-current="true"] { color: var(--accent); border-left-color: var(--accent); }
+
+/* Espécimen: original contra nueva */
+.especimen { border: 1px solid var(--border); border-radius: 10px; background: var(--bg2); padding: 16px; margin: 0 0 1.2em; }
+.especimen label { display: block; font-size: 14px; color: var(--text2); margin-bottom: 6px; }
+.especimen textarea { width: 100%; font: 16px/1.5 var(--mono); color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; resize: vertical; min-height: 64px; }
+.especimen .fila { margin-top: 16px; }
+.especimen .etiqueta { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--text2); margin: 0 0 4px; }
+.especimen .texto { font-size: clamp(26px, 4.4vw, 44px); line-height: 1.25; overflow-wrap: anywhere; margin: 0; }
+.original { font-family: "Y2KBUG original", var(--serif); }
+.nueva { font-family: "Y2KBUG Fontificata", var(--serif); }
+
+/* Rejilla de caracteres */
+.rejilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 4px; margin: 0 0 1em; padding: 0; list-style: none; }
+.rejilla li { display: grid; place-items: center; aspect-ratio: 1; font-family: "Y2KBUG Fontificata", var(--serif); font-size: 26px; background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; }
+.rejilla li.omitido { font-family: var(--serif); font-size: 18px; color: var(--text2); background: transparent; border-style: dashed; }
+
+/* Tabla de idiomas */
+.tabla { width: 100%; border-collapse: collapse; margin: 0 0 1.2em; font-size: 15px; }
+.tabla th, .tabla td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.tabla th { font-size: 13px; color: var(--text2); font-weight: 400; letter-spacing: .04em; }
+.tabla td:first-child { font-family: var(--mono); color: var(--accent); white-space: nowrap; }
+.tabla td:nth-child(2) { font-variant-numeric: tabular-nums; }
+.envoltura { overflow-x: auto; }
+
+.pie { max-width: 1080px; margin: 40px auto 0; padding: 24px 16px 40px; border-top: 1px solid var(--border); font-size: 14px; color: var(--text2); }
+</style>
+</head>
+<body>
+
+<header class="cabecera">
+  <a class="marca" href="#">
+    <svg viewBox="0 0 240 240" aria-hidden="true"><use href="#logo"/></svg>
+    Fontificar
+  </a>
+  <button class="tema" id="tema" type="button">Modo oscuro</button>
+</header>
+
+<section class="portada">
+  <svg viewBox="0 0 240 240" role="img" aria-label="Logo de Fontificar: una ñ hecha de puntos">
+    <defs>
+      <g id="logo">
+        <g class="punto-tilde">
+          <circle cx="98" cy="21" r="9"/>
+          <circle cx="164" cy="21" r="9"/>
+          <circle cx="76" cy="43" r="9"/>
+          <circle cx="120" cy="43" r="9"/>
+          <circle cx="142" cy="43" r="9"/>
+        </g>
+        <g class="punto-tinta">
+          <circle cx="76" cy="87" r="9"/>
+          <circle cx="120" cy="87" r="9"/>
+          <circle cx="142" cy="87" r="9"/>
+          <circle cx="76" cy="109" r="9"/>
+          <circle cx="98" cy="109" r="9"/>
+          <circle cx="164" cy="109" r="9"/>
+          <circle cx="76" cy="131" r="9"/>
+          <circle cx="164" cy="131" r="9"/>
+          <circle cx="76" cy="153" r="9"/>
+          <circle cx="164" cy="153" r="9"/>
+          <circle cx="76" cy="175" r="9"/>
+          <circle cx="164" cy="175" r="9"/>
+          <circle cx="76" cy="197" r="9"/>
+          <circle cx="164" cy="197" r="9"/>
+          <circle cx="76" cy="219" r="9"/>
+          <circle cx="164" cy="219" r="9"/>
+        </g>
+      </g>
+    </defs>
+    <use href="#logo"/>
+  </svg>
+  <div>
+    <h1>Fontificar</h1>
+    <p>Le pone ñ, acentos, letras latinas y símbolos a una fuente que no los trae, armándolos con sus propios glifos. La fuente original no se toca: sale una copia ampliada.</p>
+  </div>
+</section>
+
+<div class="doc-layout">
+  <main class="doc">
+    <h2 id="ejemplo">Original contra nueva</h2>
+    <p>Y2KBUG, de Ray Larabie, trae ASCII y nada más. Escribe lo que quieras: arriba, lo que la original no tiene cae en otra fuente (se nota el cambio de letra); abajo, la versión que generó Fontificar.</p>
+    <div class="especimen">
+      <label for="texto">Texto de prueba</label>
+      <textarea id="texto" rows="2">«¿Qué tal?», dijo ‘Þór’ en Łódź: 3½ kg a 25 °C, ±5 € × 2 = 10 £ · Señoría, pingüino, Straße.</textarea>
+      <div class="fila">
+        <p class="etiqueta">Original · !Y2KBUG</p>
+        <p class="texto original" id="muestra-original"></p>
+      </div>
+      <div class="fila">
+        <p class="etiqueta">Nueva · !Y2KBUG Fontificata</p>
+        <p class="texto nueva" id="muestra-nueva"></p>
+      </div>
+    </div>
+
+    <h3 id="agregados">Todo lo que se agregó</h3>
+    <p>Los 239 caracteres del idioma <code>fontificata</code> en la versión nueva. Los punteados son los que se omitieron: Y2KBUG no tiene descendentes, así que no hay de dónde sacar la panza baja de la þ ni el gancho de la ŋ.</p>
+    <ul class="rejilla" id="rejilla" aria-label="Caracteres agregados"></ul>
+
+    <h2 id="que-hace">Qué hace</h2>
+    <p>Lee la fuente, mide sus letras y arma cada caracter que falta con piezas de la misma fuente:</p>
+    <ul>
+      <li><b>Letras con acento</b> (á, ñ, ő, ž…): la letra base más el acento, encima a la distancia justa o debajo, como la cedilla.</li>
+      <li><b>Acentos</b>: el que trae la fuente, si tiene forma de acento. Si no, lo deriva: el agudo sale del grave en espejo o del apóstrofo inclinado, la tilde de la <code>s</code> acostada, el caron del circunflejo volteado.</li>
+      <li><b>Letras especiales</b>: ß es la <code>B</code> volteada si su forma lo permite (si no, <code>ss</code>); Ø es la <code>O</code> con la diagonal; Æ y Œ comparten un asta; Đ y Ł se tachan del lado donde la letra tiene el asta, medido en la fuente.</li>
+      <li><b>Símbolos</b>: las comillas salen de la coma, las rayas del guion estirado, ª º y ¹ ² ³ de letras y dígitos reducidos, € ¥ de la letra con barras, © ® de la letra dentro de la <code>O</code>.</li>
+    </ul>
+    <p>Tres reglas lo sostienen:</p>
+    <ul>
+      <li><b>No toca lo que ya existe.</b> Los glifos originales quedan idénticos; solo se agregan nuevos.</li>
+      <li><b>Mide, no supone.</b> Dónde va el asta, si la <code>i</code> tiene punto o si la <code>B</code> volteada parece ß se averigua en cada fuente.</li>
+      <li><b>Omite con motivo.</b> Lo que no se puede derivar se salta y se reporta por qué. Nunca se detiene todo por un faltante.</li>
+    </ul>
+    <p>Funciona con TrueType y OpenType CFF. No admite CFF2 (fuentes variables) ni CFF con CID.</p>
+
+    <h2 id="uso">Uso</h2>
+    <p>Necesita Python 3 y <code>fontTools</code>. Desde la carpeta del proyecto:</p>
+    <pre><code>pip install -e .
+fontificar --revisar             # qué falta y qué se puede derivar, sin escribir nada
+fontificar                       # procesa lo que haya en fonts/in/ y escribe en fonts/out/
+fontificar MiFuente.zip --abrir  # una sola fuente; abre la muestra en el navegador</code></pre>
+    <p>Sin instalar, <code>python -I fontificar</code> hace lo mismo.</p>
+    <dl>
+      <dt>entradas</dt><dd><code>.ttf</code>, <code>.otf</code>, <code>.zip</code> (se lee en memoria y da una salida por fuente) o una carpeta. Una ruta que no existe tal cual se busca en <code>fonts/in/</code>. Sin argumentos se procesa solo el nivel superior de <code>fonts/in/</code>, no sus subcarpetas.</dd>
+      <dt>--idioma</dt><dd>Qué caracteres agregar (ver abajo). Por omisión, <code>fontificata</code>.</dd>
+      <dt>-o, --salida</dt><dd>Ruta de la fuente nueva, solo con una entrada. Por omisión, <code>fonts/out/&lt;nombre&gt;-&lt;idioma&gt;.&lt;ext&gt;</code>.</dd>
+      <dt>--revisar</dt><dd>Dice qué se agregaría y qué se omitiría, sin escribir nada.</dd>
+      <dt>--abrir</dt><dd>Abre en el navegador la muestra de cada fuente generada.</dd>
+    </dl>
+    <p>Junto a cada fuente nueva se escriben su licencia (copiada de la original) y una página de muestra con las dos fuentes. Si alguna fuente del lote falla, las demás siguen y el comando termina con código 1.</p>
+
+    <h2 id="idiomas">Idiomas</h2>
+    <p>Cada idioma incluye al anterior y agrega un sufijo al nombre de la familia, sin reemplazarlo.</p>
+    <div class="envoltura">
+      <table class="tabla">
+        <thead><tr><th>Idioma</th><th>Caracteres</th><th>Qué cubre</th><th>Sufijo</th></tr></thead>
+        <tbody>
+          <tr><td>es</td><td>18</td><td>Español: á é í ó ú ü ñ, sus mayúsculas y ¡ ¿.</td><td>Español</td></tr>
+          <tr><td>latin1</td><td>66</td><td>Las letras de Latin-1 y Œ œ Ÿ: francés, alemán, portugués, nórdicos.</td><td>Latino</td></tr>
+          <tr><td>latinext</td><td>195</td><td>Más Latin Extended-A y ẞ: polaco, checo, turco, húngaro, croata, maltés, letón…</td><td>Latino Extendido</td></tr>
+          <tr><td>fontificata</td><td>239</td><td>Más Ð ð Þ þ Ŋ ŋ y los símbolos de Latin-1 y Windows-1252: comillas, rayas, « », ª º, ¹ ² ³, ½, € £ ¢ ¥, © ®, ° ± × ÷.</td><td>Fontificata</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="despues">Después de generar</h2>
+    <ol>
+      <li>Lee los omitidos: cada uno trae su motivo (por ejemplo, «la 'p' no tiene descendente»).</li>
+      <li>Abre la muestra y revisa a ojo: según la fuente, un acento derivado puede salir chico o grande y un símbolo armado puede verse forzado.</li>
+      <li>Prueba la fuente en el programa donde la vas a usar antes de meterla a un proyecto.</li>
+    </ol>
+
+    <h2 id="licencias">Licencias</h2>
+    <p>Antes de generar, lee la licencia de la fuente. Hay fuentes que prohíben modificarlas y otras que prohíben compartir derivadas; con esas no se publica nada. Fontificar ayuda con lo que suelen pedir las licencias permisivas: aumenta el nombre de la familia en vez de cambiarlo, deja intactos los glifos existentes y copia la licencia junto a la salida.</p>
+    <p>El ejemplo de esta página usa Y2KBUG, de Ray Larabie, que se puede modificar y redistribuir bajo la licencia de Larabie Fonts: la original y la versión ampliada van con <a href="fuentes/read_me.txt">su licencia</a>. Y2KBUG no trae kerning, así que no hubo nada que dañar.</p>
+  </main>
+  <nav class="doc-toc" id="indice" aria-label="En esta página"></nav>
+</div>
+
+<footer class="pie">
+  Fontificar · piel de <a href="https://github.com/RemiH06/iroFactory">iroFactory</a> (bookworm) · fuentes de ejemplo de Ray Larabie, bajo <a href="fuentes/read_me.txt">la licencia de Larabie Fonts</a>
+</footer>
+
+<script>
+// Tema: el guardado, o el del sistema. Sin almacenamiento, sigue funcionando.
+const boton = document.getElementById('tema');
+function aplicarTema(oscuro) {
+  document.body.classList.toggle('dark', oscuro);
+  boton.textContent = oscuro ? 'Modo claro' : 'Modo oscuro';
+  boton.setAttribute('aria-pressed', String(oscuro));
+}
+let guardado = null;
+try { guardado = localStorage.getItem('fontificar-tema'); } catch (e) {}
+aplicarTema(guardado ? guardado === 'oscuro' : matchMedia('(prefers-color-scheme: dark)').matches);
+boton.addEventListener('click', () => {
+  const oscuro = !document.body.classList.contains('dark');
+  aplicarTema(oscuro);
+  try { localStorage.setItem('fontificar-tema', oscuro ? 'oscuro' : 'claro'); } catch (e) {}
+});
+
+// Espécimen en vivo.
+const texto = document.getElementById('texto');
+const pintar = () => {
+  document.getElementById('muestra-original').textContent = texto.value;
+  document.getElementById('muestra-nueva').textContent = texto.value;
+};
+texto.addEventListener('input', pintar);
+pintar();
+
+// Rejilla: los caracteres de `fontificata` (fontificar/idiomas.py) y los que Y2KBUG omite.
+const CARACTERES = 'ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæçèéêëìíîïñòóôõöøùúûüýÿŒœŸ¡¿·'
+  + 'ĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁł'
+  + 'ŃńŅņŇňŌōŎŏŐőŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŹźŻżŽžẞ´¨¸¯˘˙˝ˇ˛'
+  + 'ÐðÞþŊŋ’‘‚”“„\u2013\u2014…•‹›«»ªº¹²³¼½¾€£¢¥©®°±×÷¬¦§¶¤µ';
+const OMITIDOS = 'þŊŋ';
+document.getElementById('rejilla').innerHTML = [...CARACTERES].map(c => {
+  const omitido = OMITIDOS.includes(c);
+  const nombre = `U+${c.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}${omitido ? ', omitido' : ''}`;
+  return `<li${omitido ? ' class="omitido"' : ''} title="${nombre}" aria-label="${c} ${nombre}">${c}</li>`;
+}).join('');
+
+// Índice de la página (doc-prose de iroFactory).
+const encabezados = [...document.querySelectorAll('.doc h2[id], .doc h3[id]')];
+const indice = document.getElementById('indice');
+indice.innerHTML = '<p>En esta página</p><ol>' + encabezados.map(h =>
+  `<li><a href="#${h.id}"${h.tagName === 'H3' ? ' style="padding-left:1.8em;font-size:13px"' : ''}>${h.textContent}</a></li>`).join('') + '</ol>';
+const enlaces = new Map(encabezados.map(h => [h, indice.querySelector(`a[href="#${h.id}"]`)]));
+let actual = null;
+const observador = new IntersectionObserver(entradas => {
+  // La sección actual es el último encabezado que ya pasó del tercio superior de la pantalla.
+  for (const e of entradas) if (e.isIntersecting) actual = e.target;
+  enlaces.forEach((a, h) => a.setAttribute('aria-current', String(h === actual)));
+}, { rootMargin: '0px 0px -66% 0px' });
+encabezados.forEach(h => observador.observe(h));
+</script>
+</body>
+</html>

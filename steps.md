@@ -4,12 +4,15 @@
 
 Iteración 6 (`fontificata`) cerrada el 2026-10-20: 87 pruebas en verde, ya es el idioma por omisión del CLI. Skill de Fontificar actualizada (en `48.SkillShot` y sincronizada a `~/.claude/skills/`, más su línea en el README del hub). `fonts/in/` reordenada: suelta solo `!y2kbug.ttf` (y su `read_me.txt`), cada fuente de prueba extra con su zip en su subcarpeta (`ComicRunes/`, `FortunaDot/`, `Liverpool/` solo el zip, `Samarkan/`) y `Y2KBUG.zip` en `zips/`.
 
-Logo hecho el 2026-10-20 (`logo.svg`): ñ minúscula en matriz de puntos de 5×7, dibujada con círculos y sin fuente de terceros (es obra propia, no arrastra licencias). La `n` va en tinta (`#1F2430`, `#F2F2F2` en modo oscuro por `prefers-color-scheme`) y la tilde en acento `#D9480F` (4.3:1 sobre blanco y 4.4:1 sobre `#0D1117`, sirve en los dos temas): la tilde es lo que Fontificar agrega. A 16 px se empasta; para favicon haría falta una versión simplificada.
+Logo hecho el 2026-10-20 (`docs/logo.svg`; se movió a `docs/` porque GitHub Pages solo publica esa carpeta): ñ minúscula en matriz de puntos de 5×7, dibujada con círculos y sin fuente de terceros (es obra propia, no arrastra licencias). La `n` va en tinta (`#1F2430`, `#F2F2F2` en modo oscuro por `prefers-color-scheme`) y la tilde en acento `#D9480F` (4.3:1 sobre blanco y 4.4:1 sobre `#0D1117`, sirve en los dos temas): la tilde es lo que Fontificar agrega. A 16 px se empasta; para favicon haría falta una versión simplificada.
 
-Siguiente, en este orden:
+Documentación hecha el 2026-10-20 en `docs/index.html` (lista para GitHub Pages desde `/docs`, sin compilar ni servidor): una sola página autocontenida con la piel de bookworm (paleta de claro del bosque y bosque nocturno, Libre Baskerville y Fira Code desde Bunny Fonts) y la base de `doc-prose` de iroFactory, recortadas y copiadas (MIT, crédito en el comentario de cabecera y en el pie). No se trajo el resto de bookworm (invernadero en WebGL, escritorio con ventanas): es pesado para una página de una herramienta. Secciones: espécimen en vivo (área de texto, original contra nueva; lo que la original no trae cae en Baskerville y se nota), rejilla de los 239 caracteres de `fontificata` con los omitidos punteados, qué hace, uso, idiomas, después de generar y licencias; índice que marca la sección actual; tema claro u oscuro según el sistema, con botón y `localStorage` envuelto en try/catch. Las fuentes del ejemplo van en `docs/fuentes/`: Y2KBUG original, su versión `fontificata` y la licencia de Larabie (la licencia permite redistribuir y publicar derivadas con copia de la licencia; Y2KBUG no trae kerning). La lista de caracteres de la rejilla está copiada de `idiomas.py`: si cambia el idioma, hay que regenerar `docs/fuentes/!y2kbug-fontificata.ttf` y actualizar la página. Revisada en Edge sin interfaz en claro, oscuro y a 390 px.
 
-1. Documentación simple (qué hace, cómo se usa, ejemplo original contra nueva), con piezas de los temas `apolo` o `bookworm` de `37.iroFactory`. Usar `logo.svg`.
-2. README raíz con la skill `readme-generator`.
+Ojo al revisar en esta máquina: Windows tiene instaladas `!y2kbug-es`, `-latin1` y `-latinext` (de pruebas en un editor), y el navegador puede usarlas de respaldo en otras páginas.
+
+Siguiente:
+
+1. README raíz con la skill `readme-generator` (enlazar a `docs/` y usar `docs/logo.svg`).
 
 Mejoras visuales posibles (no bloquean): la tilde hecha con la `s` acostada sale chica y el caron de Samarkan, grande (viene de sus agudo y grave, que son altos). Þ de Samarkan sale rara (su `P` es una `p` con descendente). ¢ de Y2KBUG lleva una diagonal muy pesada (la `/` de la fuente es ancha).
 
