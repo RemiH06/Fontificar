@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# fuentes de terceros y su salida
+fonts/
+*.zip
+
+# claude
+.claude/
