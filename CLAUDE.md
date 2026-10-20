@@ -31,7 +31,7 @@ fontificar/muestra.py    página HTML de muestra
 fontificar/cli.py        CLI: lotes, zips leídos en memoria, rutas por omisión
 pyproject.toml           instalación editable y el comando `fontificar`
 README.md, LICENSE       README (readme-generator) y licencia MIT del código
-docs/                    documentación (GitHub Pages): index.html, logo.svg y las fuentes del ejemplo con su licencia
+docs/                    documentación (GitHub Pages): index.html, logo.svg, favicon.svg y las fuentes del ejemplo con su licencia
 tests/                   pruebas (`python -I -m unittest discover -s tests`); `sintetica.py` arma fuentes de prueba
 steps.md                 plan y traspaso entre sesiones
 ```

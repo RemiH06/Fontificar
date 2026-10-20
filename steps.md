@@ -12,9 +12,19 @@ Ojo al revisar en esta máquina: Windows tiene instaladas `!y2kbug-es`, `-latin1
 
 README raíz hecho el 2026-10-20 con `readme-generator` (en español, badge de Python, sin «Maintained» porque aún no está publicado). Licencia del código: MIT (`LICENSE`, la misma de iroFactory); las fuentes de `docs/fuentes/` conservan la de Larabie. Versión subida a 0.6.0 (iteración 6). La URL de clonado es la del remoto (`github.com/RemiH06/Fontificar`).
 
-Siguiente: nada pendiente del plan. Ideas sueltas: activar GitHub Pages desde `/docs`; favicon simplificado del logo; las mejoras visuales de abajo.
+GitHub Pages ya estaba activo desde `master` `/docs` (https://remih06.github.io/Fontificar/, construido; página, fuentes, licencia y logo responden 200). Se actualiza solo al empujar.
 
-Mejoras visuales posibles (no bloquean): la tilde hecha con la `s` acostada sale chica y el caron de Samarkan, grande (viene de sus agudo y grave, que son altos). Þ de Samarkan sale rara (su `P` es una `p` con descendente). ¢ de Y2KBUG lleva una diagonal muy pesada (la `/` de la fuente es ancha).
+Ajustes del 2026-10-20 (89 pruebas en verde):
+
+- Favicon simplificado (`docs/favicon.svg`): la ñ con 4 puntos de tilde y 7 de `n`, grandes, en 32×32; se lee a 16 px en claro y oscuro (el logo completo se empastaba).
+- Documentación: modo claro por omisión (oscuro solo si se eligió con el botón, ya no sigue al sistema); el índice se oculta en pantallas angostas (empujaba el contenido).
+- Tilde con la `s` acostada más grande (0.4 por 0.15 em; antes 0.3 por 0.12).
+- El circunflejo hecho de agudo y grave se reduce parejo a `ALTO_DE_ACENTO` si sale más alto: arregla el circunflejo y el caron grandes de Samarkan.
+- ¢ es la `c` con un trazo vertical delgado (guion parado a 0.6 de asta), no la diagonal de la fuente, que salía muy pesada.
+- Si la `P` baja de la línea base (fuentes que usan la minúscula como mayúscula, como Samarkan), Þ es igual que þ.
+- `docs/fuentes/!y2kbug-fontificata.ttf` regenerada con estos cambios.
+
+Siguiente: nada pendiente del plan. Queda la tilde de Samarkan (su `s` es muy ornamentada); un respaldo mejor sería otra pieza, no más escala.
 
 Iteración 6, `fontificata` (implementada):
 

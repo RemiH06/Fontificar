@@ -28,8 +28,8 @@ ESCALA_DOBLE_AGUDO = 0.75
 
 # Tamaños de los respaldos que no parten de un acento, en fracción del em.
 ALTO_DE_ACENTO = 0.15  # anillo hecho con `o`, breve hecho con `u`
-ANCHO_DE_TILDE = 0.3  # tilde hecha con la `s` acostada
-ALTO_DE_TILDE = 0.12
+ANCHO_DE_TILDE = 0.4  # tilde hecha con la `s` acostada
+ALTO_DE_TILDE = 0.15
 
 # Dónde va el acento respecto a la letra base.
 ARRIBA, DEBAJO, DEBAJO_DERECHA = "arriba", "debajo", "debajo a la derecha"
@@ -272,12 +272,18 @@ def _circunflejo(obra):
 
 
 def _circunflejo_de_trazos(obra):
-    """Un agudo y un grave que se tocan arriba, como un techo."""
+    """Un agudo y un grave que se tocan arriba, como un techo. Si salen más altos que
+    `ALTO_DE_ACENTO` (agudo y grave largos, como en Samarkan), se reduce parejo."""
     agudo, grave = marca(obra, 0x0301), marca(obra, 0x0300)
     ax0, ay0, ax1, _ = limites(obra.conjunto, agudo)
     gx0, gy0, _, _ = limites(obra.conjunto, grave)
     dx = ax1 - (ax1 - ax0) * 0.3 - gx0
-    return _colocado(obra, transformado(obra, (agudo, (1, 0, 0, 1, 0, 0)), (grave, (1, 0, 0, 1, dx, ay0 - gy0))))
+    techo = transformado(obra, (agudo, (1, 0, 0, 1, 0, 0)), (grave, (1, 0, 0, 1, dx, ay0 - gy0)))
+    _, y0, _, y1 = caja_de(techo.value)
+    s = min(1, ALTO_DE_ACENTO * obra.upm / (y1 - y0))
+    chico = RecordingPen()
+    techo.replay(TransformPen(chico, (s, 0, 0, s, 0, 0)))
+    return _colocado(obra, chico)
 
 
 def _caron(obra):

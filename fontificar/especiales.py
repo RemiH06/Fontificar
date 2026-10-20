@@ -261,9 +261,12 @@ def _thorn_minuscula(obra):
 def _thorn_mayuscula(obra):
     """Þ: la `P` aplastada a 0.75 desde la base (su panza queda a media altura) más un
     asta de toda la altura encimada en la suya (si la `P` la tiene a la derecha, se
-    refleja)."""
+    refleja). Si la `P` baja de la línea base (fuentes que usan la minúscula como
+    mayúscula, como Samarkan), Þ es igual que þ."""
     conjunto = obra.conjunto
     p = obra.letra("P")
+    if _baja(obra, p):
+        return _thorn_minuscula(obra)
     x0, y0, x1, y1 = limites(conjunto, p)
     asta = ancho_de_asta(obra)
     espejo = _lado_del_asta(obra, p) == "derecha"

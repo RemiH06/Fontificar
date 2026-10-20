@@ -12,7 +12,7 @@ licencia de Larabie Fonts (fuentes/read_me.txt); esa licencia no la cubre la MIT
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Fontificar</title>
 <meta name="description" content="Amplía una fuente TTF u OTF con ñ, acentos, letras latinas y símbolos derivados de sus propios glifos.">
-<link rel="icon" type="image/svg+xml" href="logo.svg">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.bunny.net">
 <link href="https://fonts.bunny.net/css?family=libre-baskerville:400,400i,700&family=fira-code:400&display=swap" rel="stylesheet">
 <style>
@@ -57,7 +57,7 @@ a { color: var(--accent); text-underline-offset: 3px; }
 /* Doc Prose (iroFactory, recortado a lo que usa esta página) */
 .doc-layout { max-width: 1080px; margin: 0 auto; padding: 16px; display: grid; grid-template-columns: minmax(0, 1fr) 210px; gap: 40px; align-items: start; }
 .doc-toc { position: sticky; top: 24px; font-size: 14px; }
-@media (max-width: 960px) { .doc-layout { grid-template-columns: minmax(0, 1fr); } .doc-toc { position: static; order: -1; } }
+@media (max-width: 960px) { .doc-layout { grid-template-columns: minmax(0, 1fr); } .doc-toc { display: none; } }
 .doc :is(h2, h3) { line-height: 1.2; margin: 1.8em 0 .5em; scroll-margin-top: 24px; }
 .doc h2 { font-size: clamp(22px, 2.6vw, 28px); padding-bottom: .3em; border-bottom: 1px solid var(--border); }
 .doc h3 { font-size: 19px; }
@@ -241,7 +241,7 @@ fontificar MiFuente.zip --abrir  # una sola fuente; abre la muestra en el navega
 </footer>
 
 <script>
-// Tema: el guardado, o el del sistema. Sin almacenamiento, sigue funcionando.
+// Tema: claro por omisión; oscuro solo si se eligió antes. Sin almacenamiento, sigue funcionando.
 const boton = document.getElementById('tema');
 function aplicarTema(oscuro) {
   document.body.classList.toggle('dark', oscuro);
@@ -250,7 +250,7 @@ function aplicarTema(oscuro) {
 }
 let guardado = null;
 try { guardado = localStorage.getItem('fontificar-tema'); } catch (e) {}
-aplicarTema(guardado ? guardado === 'oscuro' : matchMedia('(prefers-color-scheme: dark)').matches);
+aplicarTema(guardado === 'oscuro');
 boton.addEventListener('click', () => {
   const oscuro = !document.body.classList.contains('dark');
   aplicarTema(oscuro);

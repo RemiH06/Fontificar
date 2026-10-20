@@ -245,14 +245,14 @@ def _con_barras(obra, letra, alturas, desde, hasta):
 
 
 def _centavo(obra):
-    """¢: la `c` con la diagonal encima, de 1.3 veces su alto y centrada."""
-    conjunto = obra.conjunto
-    base, barra = obra.letra("cC"), diagonal(obra)
-    bx0, by0, bx1, by1 = limites(conjunto, base)
-    x0, y0, x1, y1 = limites(conjunto, barra)
-    s = 1.3 * (by1 - by0) / (y1 - y0)
-    matriz = (s, 0, 0, s, (bx0 + bx1) / 2 - s * (x0 + x1) / 2, (by0 + by1) / 2 - s * (y0 + y1) / 2)
-    return transformado(obra, (base, (1, 0, 0, 1, 0, 0)), (barra, matriz)), obra.avance(base)
+    """¢: la `c` con un trazo vertical delgado (el guion parado, a 0.6 de asta) de 1.3
+    veces su alto, centrado. La diagonal de la fuente salía demasiado pesada."""
+    base = obra.letra("cC")
+    bx0, by0, bx1, by1 = limites(obra.conjunto, base)
+    ancho, alto = 0.6 * ancho_de_asta(obra), 1.3 * (by1 - by0)
+    trazo = _movido(asta_vertical(obra, ancho, alto),
+                    (1, 0, 0, 1, (bx0 + bx1 - ancho) / 2, (by0 + by1 - alto) / 2))
+    return _juntos(transformado(obra, (base, (1, 0, 0, 1, 0, 0))), trazo), obra.avance(base)
 
 
 def _hueco(obra, nombre):

@@ -209,6 +209,21 @@ class Adaptable(unittest.TestCase):
         _, _, _, y1 = caja_de([t for c in self.contornos(salida, "ŋ") for t in c])
         self.assertEqual(y1, 500)  # sin el punto de la `j`
 
+    def test_circunflejo_de_agudo_y_grave_largos_se_reduce(self):
+        """Sin `^` y con un grave de 300 de alto, el circunflejo hecho de agudo y grave
+        no pasa de `ALTO_DE_ACENTO` (150 en 1000)."""
+        grave = [[(50, 750), (130, 750), (330, 1050), (250, 1050)]]
+        resultado, _, salida = self.generar("latinext", cambios={"^": None, "`": grave})
+        self.assertIn(0x2C6, resultado.nuevos)
+        _, y0, _, y1 = caja_de([t for c in self.contornos(salida, "ˆ") for t in c])
+        self.assertLessEqual(y1 - y0, 150 + 1)
+
+    def test_thorn_mayuscula_igual_a_la_minuscula_si_la_p_baja(self):
+        p = [caja(50, -250, 150, 500), caja(50, 400, 450, 500), caja(350, 200, 450, 500), caja(50, 200, 450, 300)]
+        b = [caja(50, 0, 150, 800), caja(50, 0, 450, 100), caja(350, 0, 450, 300), caja(50, 200, 450, 300)]
+        _, _, salida = self.generar("fontificata", cambios={"p": p, "P": p, "b": b})
+        self.assertEqual(self.contornos(salida, "Þ"), self.contornos(salida, "þ"))
+
     def test_acento_sale_de_una_letra_acentuada_de_la_fuente(self):
         """Sin `´`, `` ` `` ni apóstrofo, pero con é dibujada: el agudo es é menos e."""
         acento = [[(250, 720), (330, 720), (430, 820), (350, 820)]]
