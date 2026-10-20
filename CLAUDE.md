@@ -19,8 +19,8 @@ Forma de uso decidida: librería (`fontificar.py`) con un CLI delgado (`argparse
 ```
 fonts/in/      fuentes de entrada (no se versionan)
 fonts/out/     fuentes generadas (no se versionan)
-fontificar.py  núcleo y CLI (por crear)
-tests/         pruebas (por crear)
+fontificar.py  núcleo y CLI
+tests/         pruebas (`python -I -m unittest discover -s tests`)
 steps.md       plan y traspaso entre sesiones
 ```
 

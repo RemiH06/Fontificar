@@ -2,12 +2,20 @@
 
 ## Siguiente sesión
 
-Inspección hecha (hechos en `CLAUDE.md`). Arrancar la iteración 1 con `fontificar.py`:
+Iteración 1 casi cerrada: `fontificar.py`, `tests/` (11 pruebas en verde) y la muestra existen. Falta:
 
-1. Decidir cómo se ponen los acentos en una fuente unicase donde `grave`, `~` y `^` se solapan con la letra: subirlos ~100 unidades y ver si hay que subir `hhea`/`OS/2` ascent, o escalarlos. Probar con la página de muestra antes de fijar la regla.
-2. Derivar lo que falta: agudo (espejo horizontal de `grave`), diéresis (dos cuadrados a partir de `period`, escalados), ¡ y ¿ (giro de 180° de `exclam` y `question`).
-3. Componer las 14 letras (á é í ó ú ü ñ y mayúsculas, que aquí son el mismo glifo base en tamaño) como compuestos TrueType, registrar `cmap`, `hmtx`, nombres de glifo y `post`; quitar `hdmx`; renombrar la familia a `!Y2KBUG Español` sin quitar el nombre original.
-4. Auto-chequeo con asserts (`tests/`) y la página HTML de muestra.
+1. Revisión visual en un editor real y en `fonts/muestra.html` (la corrida local se vio con FreeType a 150 px y los acentos no chocan). Si algún acento se ve pegado o muy lejos, ajustar `HUECO` en `fontificar.py`.
+2. Con eso, marcar el criterio "sin cuadros vacíos en un editor real" y cerrar la iteración 1.
+3. Iteración 2 (Latin-1): sumar `grave`, `circumflex`, `ring`, `cedilla` y las letras de la tabla. El mecanismo ya es general (`MARCAS`, descomposición NFD). Pendiente de decidir: `å`, `ø`, `æ`, `œ`, `ß` no se derivan por composición.
+
+Decisiones tomadas en la iteración 1:
+
+- Acento a `HUECO` (0.06 em) por encima de la caja de la base, centrado: sirve igual con unicase, minúsculas o mayúsculas.
+- Agudo: espejo de `grave`. Diéresis: contorno exterior de `period` a la mitad de tamaño, dos veces. Tilde: `asciitilde` tal cual. ¡ ¿: giro de 180° de `!` y `?`.
+- Se agregan también `´` (U+00B4) y `¨` (U+00A8), porque son los acentos derivados.
+- Ascendente de `hhea`, `OS/2` typo y win sube de 800 a 928 (la ñ llega a 928). Cambia el interlineado de la fuente, no los glifos.
+- La tabla `cmap` de Mac recibe los códigos MacRoman, no Unicode.
+- Si la fuente ya cubre el idioma, `fontificar` falla en vez de renombrar otra vez.
 
 ## Fontificar: nota de alcance
 
@@ -30,12 +38,12 @@ Inspección hecha (hechos en `CLAUDE.md`). Arrancar la iteración 1 con `fontifi
 **Stack (restricción tomada):** Python + `fontTools`, sin más dependencias. Mecanismo central: componer base + marca con la posición correcta. Aviso: en TTF los glifos compuestos son nativos (referencias a componentes); en OTF/CFF no existen, así que ahí se copia el contorno de la base y de la marca ya combinados con un pen. El script debe manejar ambos formatos.
 
 **Listo cuando:**
-- [ ] Cada codepoint de la lista objetivo está en `cmap` y apunta a un glifo con contorno.
+- [x] Cada codepoint de la lista objetivo está en `cmap` y apunta a un glifo con contorno.
 - [ ] "Canción, pingüino, ¿Qué tal? ¡Hola! ÁÉÍÓÚÜÑ" se ve sin cuadros vacíos en un editor real.
-- [ ] Los acentos no se separan de su letra ni chocan con la línea de arriba, en minúsculas y mayúsculas (revisión visual en tamaño grande).
-- [ ] Los glifos que ya existían no cambian (mismos contornos y anchos antes y después).
-- [ ] La familia de salida conserva el nombre original y le agrega un sufijo (`!Y2KBUG Español`), como pide la licencia de Larabie, y sale con una copia de esa licencia.
-- [ ] Un auto-chequeo con asserts corre sobre la fuente de salida (ponytail: lógica no trivial lleva prueba).
+- [x] Los acentos no se separan de su letra ni chocan con la línea de arriba, en minúsculas y mayúsculas (revisión visual en tamaño grande).
+- [x] Los glifos que ya existían no cambian (mismos contornos y anchos antes y después).
+- [x] La familia de salida conserva el nombre original y le agrega un sufijo (`!Y2KBUG Español`), como pide la licencia de Larabie, y sale con una copia de esa licencia.
+- [x] Un auto-chequeo con asserts corre sobre la fuente de salida (ponytail: lógica no trivial lleva prueba).
 
 ### Iteraciones
 
