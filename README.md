@@ -7,7 +7,7 @@
 ██╔══╝  ██║   ██║██║╚██╗██║   ██║   ██║██╔══╝  ██║██║     ██╔══██║██╔══██╗
 ██║     ╚██████╔╝██║ ╚████║   ██║   ██║██║     ██║╚██████╗██║  ██║██║  ██║
 ╚═╝      ╚═════╝ ╚═╝  ╚═══╝   ╚═╝   ╚═╝╚═╝     ╚═╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝
-       by Hex (@RemiH06)          version 0.6.0
+       by RemLam (@RemiH06)          version 0.6.0
 ```
 
 ![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)
@@ -68,4 +68,4 @@ Sin instalar, `python -I fontificar` desde la raíz hace lo mismo.
 
 ## Autoría
 
-por Hex ([@RemiH06](https://github.com/RemiH06))
+por RemLam ([@RemiH06](https://github.com/RemiH06))
